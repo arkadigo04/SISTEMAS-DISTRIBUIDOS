@@ -1,0 +1,48 @@
+services:
+  mysqldb:
+    image: mysql:8.0.31-oracle
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQLDB_DATABASE
+    ports:
+      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+    volumes:
+      - db:/var/lib/mysql
+      - ./mysqldb/sql/bbdd_prod.sql:/docker-entrypoint-initdb.d/bbdd_prod.sql
+      - ./mysqldb/sql/01-create-users-des.sql:/docker-entrypoint-initdb.d/01-create-users-des.sql
+    networks:
+      - app-network
+  webapp:
+    container_name: $APP_CONTAINER_NAME_DES
+    depends_on:
+      - mysqldb
+    build: ./
+    restart: on-failure
+    env_file: ./.env
+
+    ports:
+      - $SPRING_LOCAL_PORT_DES:$SPRING_DOCKER_PORT_DES
+    environment:
+      - APP_CONTAINER_NAME_DES=$APP_CONTAINER_NAME_DES
+      - SPRING-DATASOURCE-USERNAME=$MYSQLDB_USER_DES
+      - SPRING-DATASOURCE-PASSWORD=$MYSQLDB_ROOT_PASSWORD_DES
+      - SPRING-DATASOURCE-DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver
+      - SPRING-JPA-HIBERNATE-DLL-AUTO=create-drop
+      - SPRING-JPA-SHOW-SQL=false
+      - SERVER-PORT=$SPRING_DOCKER-PORT_DES
+      - SPRING-DATASOURCE-URL=jdbc:mysql://mysqldb:$MYSQLDB_DOCKER_PORT_DES/$MYSQLDB_DATABASE_DES?useSSL=false&allowPublicKeyRetrieval=true
+    networks:
+      - app-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .m2:/root/.m2
+    stdin_open: true
+    tty: true
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  db:
