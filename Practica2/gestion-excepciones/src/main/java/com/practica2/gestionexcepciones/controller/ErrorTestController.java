@@ -3,7 +3,9 @@ package com.practica2.gestionexcepciones.controller;
 import com.practica2.gestionexcepciones.service.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class ErrorTestController {
@@ -11,26 +13,35 @@ public class ErrorTestController {
     @Autowired
     private ApiService apiService;
 
+    @GetMapping("/login")
+    public String mostrarLogin() { return "login"; }
+
     @GetMapping("/")
-    public String mostrarPantallaPruebas() {
-        return "pruebas_api"; // Redirigimos la raíz a nuestra pantalla
-    }
+    public String mostrarInicio() { return "index"; }
 
-    @GetMapping("/probar/archivo")
-    public String probarArchivo() {
-        apiService.testArchivo();
+    @GetMapping("/pruebas-api")
+    public String mostrarPantallaPruebas() { return "pruebas_api"; }
+
+    // --- Endpoints Funcionales ---
+
+    @GetMapping("/funcional/archivo")
+    public String probarArchivo(@RequestParam String nombreArchivo, Model model) {
+        String resultado = apiService.leerArchivo(nombreArchivo);
+        model.addAttribute("exito", "Resultado de Archivo: " + resultado);
         return "pruebas_api";
     }
 
-    @GetMapping("/probar/basedatos")
-    public String probarBD() {
-        apiService.testBaseDatos();
+    @GetMapping("/funcional/basedatos")
+    public String probarBD(@RequestParam String nombreTabla, Model model) {
+        String resultado = apiService.consultarBD(nombreTabla);
+        model.addAttribute("exito", "Datos extraídos de SQLite: " + resultado);
         return "pruebas_api";
     }
 
-    @GetMapping("/probar/pokemon")
-    public String probarPokemon() {
-        apiService.testPokemon();
+    @GetMapping("/funcional/pokemon")
+    public String probarPokemon(@RequestParam String nombrePokemon, Model model) {
+        String resultado = apiService.buscarPokemon(nombrePokemon.toLowerCase());
+        model.addAttribute("exito", "Pokémon encontrado: " + resultado);
         return "pruebas_api";
     }
 }
