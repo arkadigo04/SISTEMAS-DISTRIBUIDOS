@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio - Sistemas Distribuidos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; text-align: center; background-color: #f4f4f9;}
+        .contenedor { max-width: 600px; margin: auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 20px; text-decoration: none; background-color: #007bff; color: white; border-radius: 5px; font-weight: bold;}
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Bienvenido a la Práctica 2</h1>
+        <p>Sistema de gestión de excepciones con Spring Boot y Python.</p>
+        <br>
+        <a href="/pruebas-api" class="btn">Ir al Simulador de Excepciones</a>
+        <br><br>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" style="background: none; border: none; color: red; text-decoration: underline; cursor: pointer;">Cerrar sesión</button>
+        </form>
+    </div>
+</body>
+</html>
