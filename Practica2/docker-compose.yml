@@ -1,30 +1,45 @@
 version: '3.8'
 
 services:
-  # Contenedor 1: Nuestra API de Python
+  # 1. LA BASE DE DATOS (PostgreSQL)
+  db-usuarios:
+    image: postgres:15
+    container_name: db-usuarios
+    environment:
+      POSTGRES_DB: pokemon_db
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./datos_db:/var/lib/postgresql/data
+    networks:
+      - red_pokemon
+
+  # 2. LA API DE PYTHON
   python-api:
-    build:
-      context: ./api_python
+    build: ./api_python
+    volumes:
+      - ./api_python:/app
     ports:
       - "5000:5000"
     networks:
-      - mi_red_distribuida
+      - red_pokemon
 
-  # Contenedor 2: Nuestro Frontend/Backend de Java
+  # 3. LA APP DE JAVA
   java-app:
-    build:
-      context: ./gestion-excepciones
+    build: ./gestion-excepciones
     ports:
       - "8080:8080"
     environment:
-      # Aquí le decimos a Java que "python-api" es el nombre del otro contenedor
       - PYTHON_URL=http://python-api:5000/api
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-usuarios:5432/pokemon_db
     depends_on:
+      - db-usuarios
       - python-api
     networks:
-      - mi_red_distribuida
+      - red_pokemon
 
-# Creamos una red virtual aislada para que hablen entre ellos
 networks:
-  mi_red_distribuida:
+  red_pokemon:
     driver: bridge
