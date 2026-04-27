@@ -1,59 +1,61 @@
-# app.py
 from flask import Flask, jsonify
 import sqlite3
 import requests
+import os
 
 app = Flask(__name__)
 
-# 1. Simular Excepción de apertura y lectura de archivos
-@app.route('/api/error/archivo', methods=['GET'])
-def error_archivo():
+# --- AUTO-CONFIGURACIÓN INICIAL ---
+# 1. Crear archivo de texto de prueba automáticamente para que no te falle
+with open('notas.txt', 'w', encoding='utf-8') as f:
+    f.write("¡Hola! Este es un mensaje secreto leído desde un archivo de texto real.")
+
+# 2. Crear base de datos SQLite y meter usuarios reales
+conexion = sqlite3.connect('mi_base_de_datos.db')
+cursor = conexion.cursor()
+cursor.execute('CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, nombre TEXT, rol TEXT)')
+cursor.execute('DELETE FROM usuarios') # Limpiamos por si reinicias
+cursor.execute("INSERT INTO usuarios (nombre, rol) VALUES ('Ana', 'Administradora')")
+cursor.execute("INSERT INTO usuarios (nombre, rol) VALUES ('Luis', 'Usuario Normal')")
+conexion.commit()
+conexion.close()
+# ----------------------------------
+
+# Archivos
+@app.route('/api/archivo/<nombre>', methods=['GET'])
+def leer_archivo(nombre):
     try:
-        # Intentamos abrir un archivo que NO existe
-        with open('un_archivo_que_no_existe.txt', 'r') as file:
+        with open(f'{nombre}.txt', 'r', encoding='utf-8') as file:
             contenido = file.read()
-        return jsonify({"mensaje": "Archivo leído con éxito"}), 200
+        return jsonify({"mensaje": "Éxito", "contenido": contenido}), 200
     except FileNotFoundError as e:
-        # Capturamos el error específico y devolvemos un código HTTP 404 (Not Found)
-        return jsonify({
-            "error_tipo": "FILE_ERROR",
-            "mensaje_original": str(e)
-        }), 404
+        return jsonify({"error_tipo": "FILE_ERROR", "mensaje_original": str(e)}), 404
 
-# 2. Simular Excepción de accesos a bases de datos
-@app.route('/api/error/basedatos', methods=['GET'])
-def error_basedatos():
+# Base de datos (recibe el nombre de la tabla)
+@app.route('/api/basedatos/<tabla>', methods=['GET'])
+def leer_basedatos(tabla):
     try:
-        # Nos conectamos a una base de datos temporal en memoria
-        conexion = sqlite3.connect(':memory:')
+        conexion = sqlite3.connect('mi_base_de_datos.db')
         cursor = conexion.cursor()
-        # Intentamos hacer una consulta a una tabla que NUNCA hemos creado
-        cursor.execute('SELECT * FROM tabla_fantasma')
-        return jsonify({"mensaje": "Consulta exitosa"}), 200
+        # Intentamos leer la tabla que pida el usuario
+        cursor.execute(f'SELECT * FROM {tabla}')
+        filas = cursor.fetchall()
+        conexion.close()
+        return jsonify({"mensaje": "Consulta exitosa", "datos": filas}), 200
     except sqlite3.OperationalError as e:
-        # Capturamos el error de base de datos y devolvemos un código HTTP 500 (Internal Server Error)
-        return jsonify({
-            "error_tipo": "DB_ERROR",
-            "mensaje_original": str(e)
-        }), 500
+        # Si pide una tabla que no existe, salta la excepción
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje_original": str(e)}), 500
 
-# 3. Simular Excepción de llamadas a APIs de terceros (Pokémon)
-@app.route('/api/error/pokemon', methods=['GET'])
-def error_pokemon():
+# PokeAPI
+@app.route('/api/pokemon/<nombre>', methods=['GET'])
+def buscar_pokemon(nombre):
     try:
-        # Llamamos a la API real de Pokémon pidiendo uno que no existe
-        respuesta = requests.get('https://pokeapi.co/api/v2/pokemon/digimon_no_es_pokemon')
-        # Esto hace que lance un error si la respuesta no es exitosa (como un 404)
+        respuesta = requests.get(f'https://pokeapi.co/api/v2/pokemon/{nombre}')
         respuesta.raise_for_status()
-        return jsonify(respuesta.json()), 200
+        datos = respuesta.json()
+        return jsonify({"nombre": datos['name'], "experiencia_base": datos['base_experience']}), 200
     except requests.exceptions.HTTPError as e:
-        # Capturamos el error de la API externa y devolvemos un código HTTP 502 (Bad Gateway)
-        return jsonify({
-            "error_tipo": "API_THIRD_PARTY_ERROR",
-            "mensaje_original": str(e)
-        }), 502
+        return jsonify({"error_tipo": "API_THIRD_PARTY_ERROR", "mensaje_original": str(e)}), 502
 
 if __name__ == '__main__':
-    # Iniciamos el servidor en el puerto 5000
-    print("Iniciando la API de prueba en http://localhost:5000")
     app.run(debug=True, port=5000)
