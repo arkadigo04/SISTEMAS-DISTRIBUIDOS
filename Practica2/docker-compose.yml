@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Contenedor 1: Nuestra API de Python
+  python-api:
+    build:
+      context: ./api_python
+    ports:
+      - "5000:5000"
+    networks:
+      - mi_red_distribuida
+
+  # Contenedor 2: Nuestro Frontend/Backend de Java
+  java-app:
+    build:
+      context: ./gestion-excepciones
+    ports:
+      - "8080:8080"
+    environment:
+      # Aquí le decimos a Java que "python-api" es el nombre del otro contenedor
+      - PYTHON_URL=http://python-api:5000/api
+    depends_on:
+      - python-api
+    networks:
+      - mi_red_distribuida
+
+# Creamos una red virtual aislada para que hablen entre ellos
+networks:
+  mi_red_distribuida:
+    driver: bridge
