@@ -1,34 +1,57 @@
 <!DOCTYPE html>
-<html lang="es">
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pruebas de Excepciones</title>
+    <title>Aplicación Funcional</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9;}
         .contenedor { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .btn { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold;}
-        .btn-archivo { background-color: #007bff; }
-        .btn-bd { background-color: #dc3545; }
-        .btn-api { background-color: #28a745; }
-        .alerta-error { background-color: #f8d7da; color: #721c24; padding: 15px; margin-top: 20px; border-radius: 5px; border: 1px solid #f5c6cb; }
+        .caja { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .btn { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold;}
+        .alerta-error { background-color: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .alerta-exito { background-color: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        input[type="text"] { padding: 8px; width: 60%; margin-right: 10px; }
     </style>
 </head>
 <body>
-    <div class="contenedor">
-        <h1>Simulador de Excepciones (Spring Boot -> Python)</h1>
-        <p>Haz clic en los botones para forzar excepciones en Python y observar cómo Spring Boot las intercepta y traduce amigablemente:</p>
+<div class="contenedor">
+    <h1>Aplicación Distribuida Completa</h1>
+    <p>Introduce datos correctos para ver la app funcionar, o datos incorrectos para activar el Gestor de Excepciones.</p>
 
-        <div>
-            <a href="/probar/archivo"><button class="btn btn-archivo">1. Forzar Error de Archivo</button></a>
-            <a href="/probar/basedatos"><button class="btn btn-bd">2. Forzar Error de Base de Datos</button></a>
-            <a href="/probar/pokemon"><button class="btn btn-api">3. Forzar Error PokeAPI</button></a>
-        </div>
-
-        <div th:if="${error_traducido}" class="alerta-error">
-            <h3 style="margin-top:0;">Información del Error</h3>
-            <p th:text="${error_traducido}"></p>
-        </div>
+    <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
+    <div th:if="${error_traducido}" class="alerta-error">
+        <h3 style="margin-top:0;">Excepción Interceptada por Spring</h3>
+        <p th:text="${error_traducido}"></p>
     </div>
+
+    <div class="caja">
+        <h3>1. Lector de Archivos de Texto</h3>
+        <form action="/funcional/archivo" method="get">
+            <input type="text" name="nombreArchivo" placeholder="Escribe 'notas' para éxito" required>
+            <button type="submit" class="btn" style="background-color: #007bff;">Leer Archivo</button>
+        </form>
+        <small style="color: gray;">Prueba con <b>notas</b> (funcionará) o con <b>inventado</b> (lanzará la excepción).</small>
+    </div>
+
+    <div class="caja">
+        <h3>2. Consulta Base de Datos Externa (SQLite)</h3>
+        <form action="/funcional/basedatos" method="get">
+            <input type="text" name="nombreTabla" placeholder="Escribe 'usuarios' para éxito" required>
+            <button type="submit" class="btn" style="background-color: #dc3545;">Consultar DB</button>
+        </form>
+        <small style="color: gray;">Prueba con la tabla <b>usuarios</b> (funcionará) o con la tabla <b>coches</b> (lanzará la excepción).</small>
+    </div>
+
+    <div class="caja">
+        <h3>3. Buscador PokeAPI (Terceros)</h3>
+        <form action="/funcional/pokemon" method="get">
+            <input type="text" name="nombrePokemon" placeholder="Escribe 'ditto' para éxito" required>
+            <button type="submit" class="btn" style="background-color: #28a745;">Buscar API</button>
+        </form>
+        <small style="color: gray;">Prueba con <b>ditto</b> (funcionará) o con <b>digimon</b> (lanzará la excepción).</small>
+    </div>
+
+    <br><a href="/">Volver al inicio</a>
+</div>
 </body>
 </html>
