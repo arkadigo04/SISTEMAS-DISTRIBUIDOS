@@ -34,7 +34,7 @@ public class ErrorTestController {
     @GetMapping("/funcional/basedatos")
     public String probarBD(@RequestParam String nombreTabla, Model model) {
         String resultado = apiService.consultarBD(nombreTabla);
-        model.addAttribute("exito", "Datos extraídos de SQLite: " + resultado);
+        model.addAttribute("exito", "Registro de la Liga Pokémon: " + resultado);
         return "pruebas_api";
     }
 

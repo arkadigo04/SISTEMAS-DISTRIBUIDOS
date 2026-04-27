@@ -7,7 +7,10 @@ import org.springframework.web.client.RestClient;
 public class ApiService {
 
     private final RestClient restClient = RestClient.create();
-    private final String BASE_URL = "http://localhost:5000/api";
+    // Si la variable "PYTHON_URL" existe (en Docker), la usa. Si no, usa localhost (para pruebas locales).
+    private final String BASE_URL = System.getenv("PYTHON_URL") != null
+            ? System.getenv("PYTHON_URL")
+            : "http://localhost:5000/api";
 
     public String leerArchivo(String nombre) {
         return restClient.get()
