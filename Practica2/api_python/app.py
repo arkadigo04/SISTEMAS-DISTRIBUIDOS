@@ -121,17 +121,24 @@ def procesar_archivo(nombre_archivo):
 
         equipo = []
         for linea in lineas:
-            registro = linea.strip().lower()
-            if registro:
-                r = requests.get(f'https://pokeapi.co/api/v2/pokemon/{registro}')
-                if r.status_code == 200:
-                    datos = r.json()
-                    equipo.append({
-                        "nombre": datos['name'].capitalize(),
-                        "imagen": datos['sprites']['other']['official-artwork']['front_default']
-                    })
-                else:
-                    equipo.append({"nombre": registro.capitalize(), "imagen": None})
+                    registro = linea.strip().lower()
+                    if registro:
+                        r = requests.get(f'https://pokeapi.co/api/v2/pokemon/{registro}')
+                        if r.status_code == 200:
+                            datos = r.json()
+                            equipo.append({
+                                "nombre": datos['name'].capitalize(),
+                                "imagen": datos['sprites']['other']['official-artwork']['front_default'],
+                                "experiencia": datos['base_experience'],
+                                "altura": datos['height']/10,
+                                "peso": datos['weight']/10
+                            })
+                        else:
+                            equipo.append({
+                                "nombre": registro.capitalize(),
+                                "imagen": None,
+                                "experiencia": 0, "altura": 0, "peso": 0
+                            })
         return jsonify(equipo), 200
     except Exception as e:
         return jsonify({"error_tipo": "INTERNAL_SERVER_ERROR", "mensaje": str(e)}), 500

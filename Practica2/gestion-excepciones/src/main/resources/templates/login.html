@@ -1,36 +1,24 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Autenticación - Sistema Pokedex</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <title>Iniciar Sesión - Pokédex</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
 <body>
-<div class="auth-container">
-    <div class="box text-center">
-        <h2>Inicio de Sesión</h2>
-        <p class="header-subtitle">Identificación de Personal Autorizado</p>
+<div class="box">
+    <h2>Iniciar Sesión</h2>
+    <div th:if="${param.error}" class="alert-error">Usuario o contraseña incorrectos.</div>
+    <div th:if="${param.logout}" class="alert-success">Sesión cerrada con éxito.</div>
+    <div th:if="${param.success}" class="alert-success">Inscripción completada correctamente.</div>
 
-        <div th:if="${param.error}" class="alert-error">Credenciales de acceso no válidas.</div>
-        <div th:if="${param.logout}" class="alert-success">Sesión finalizada de forma segura.</div>
-        <div th:if="${param.success}" class="alert-success">Registro completado. Proceda a identificarse.</div>
-        <div th:if="${param.resetSuccess}" class="alert-success">Clave de acceso actualizada correctamente.</div>
-
-        <form th:action="@{/login}" method="post">
-            <div class="form-group">
-                <input type="text" name="username" placeholder="Identificador de usuario" required autofocus>
-            </div>
-            <div class="form-group">
-                <input type="password" name="password" placeholder="Clave de seguridad" required>
-            </div>
-            <button type="submit" class="btn-primary">Acceder al Sistema</button>
-        </form>
-
-        <div class="links-container">
-            <a href="/register">Solicitar nueva licencia de acceso</a>
-            <a href="/forgot-password" class="link-danger">Recuperar clave de seguridad</a>
-        </div>
-    </div>
+    <form th:action="@{/login}" method="post">
+        <input type="text" name="username" placeholder="Nombre de usuario" required autofocus>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Acceder</button>
+    </form>
+    <a href="/register">Crear una nueva cuenta</a>
+    <a href="/forgot-password" style="color: #6c757d;">Recuperar credenciales</a>
 </div>
 </body>
 </html>

@@ -2,117 +2,148 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Administración</title>
+    <title>Centro de Datos Pokedex</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/International_Pokémon_logo.svg}">
     <link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
 <body>
 
 <div class="navbar">
-    <h1>Sistema Distribuido</h1>
-    <a href="/">Volver al Inicio</a>
+    <img th:src="@{/img/International_Pokémon_logo.svg}" alt="Pokémon Logo" class="banner-logo">
+    <h1>Terminal de Gestión Distribuida</h1>
+    <a href="/">Cerrar Sesión</a>
 </div>
 
 <div class="container">
 
+    <audio id="bg-audio" loop>
+        <source th:src="@{/audio/musica.mp3}" type="audio/mpeg">
+    </audio>
+
+    <button id="mute-btn" onclick="gestionarAudio(event)">PLAY</button>
+
     <div th:if="${error_traducido}" class="alert alert-danger">
-        <div class="alert-title">Excepción Crítica Detectada</div>
         <span th:text="${error_traducido}"></span>
     </div>
-
     <div th:if="${error_no_critico}" class="alert alert-warning">
-        <div class="alert-title">Aviso del Sistema</div>
         <span th:text="${error_no_critico}"></span>
     </div>
-
     <div th:if="${exitoGeneral}" class="alert alert-success">
         <span th:text="${exitoGeneral}"></span>
     </div>
 
-    <div th:if="${datosPokemon}" class="card">
-        <div class="card-header">Detalles del Registro: <span th:text="${datosPokemon.nombre}"></span></div>
-        <img class="poke-img" th:src="${datosPokemon.imagen}" alt="Imagen del registro">
-        <div class="stats-box">
-            <div><strong>Exp. Base:</strong> <span th:text="${datosPokemon.experiencia}"></span></div>
-            <div><strong>Altura:</strong> <span th:text="${datosPokemon.altura}"></span> m</div>
-            <div><strong>Peso:</strong> <span th:text="${datosPokemon.peso}"></span> kg</div>
-        </div>
-    </div>
-
     <div th:if="${datosBD}" class="card">
-        <div class="card-header">Resultados de la tabla: <span th:text="${nombreTabla}"></span></div>
-        <table>
-            <tr><th>ID</th><th>Nombre de Entrenador</th><th>Medallas</th></tr>
+        <div class="card-header">Ficheros de la Liga: <span th:text="${nombreTabla}"></span></div>
+        <table class="poke-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Entrenador</th>
+                <th>Medallas</th>
+            </tr>
+            </thead>
+            <tbody>
             <tr th:each="fila : ${datosBD}">
                 <td th:text="${fila.id}"></td>
-                <td th:text="${fila.nombre}"></td>
-                <td th:text="${fila.medallas}"></td>
+                <td class="fw-bold" th:text="${fila.nombre}"></td>
+                <td th:text="${fila.medallas} + ' insignias'"></td>
             </tr>
+            </tbody>
         </table>
     </div>
 
     <div th:if="${equipoPokemon}" class="card">
-        <div class="card-header">Datos importados del archivo: <span th:text="${nombreArchivo} + '.txt'"></span></div>
-        <div class="grid-4">
-            <div th:each="poke : ${equipoPokemon}">
-                <img th:src="${poke.imagen}" alt="Imagen" style="width: 100%; border-radius: 8px; border: 1px solid #CED0D4;">
-                <div style="font-weight: 600; font-size: 14px; margin-top: 8px;" th:text="${poke.nombre}"></div>
+        <div class="card-header">Ficha de Equipo: <span th:text="${nombreArchivo}"></span></div>
+        <div class="grid-equipo">
+            <div th:each="poke : ${equipoPokemon}" class="poke-card-circular">
+                <img th:if="${poke.imagen != null}" th:src="${poke.imagen}" class="poke-circle" alt="Img">
+                <div th:if="${poke.imagen == null}" class="poke-circle poke-circle-empty">N/A</div>
+                <div class="poke-name" th:text="${poke.nombre}"></div>
+                <div class="poke-stats-mini">
+                    Exp: <span th:text="${poke.experiencia}"></span><br>
+                    Alt: <span th:text="${poke.altura}"></span>m
+                </div>
             </div>
         </div>
     </div>
 
+    <div th:if="${datosPokemon}" class="card">
+        <div class="card-header" th:text="${datosPokemon.nombre}"></div>
+        <img class="poke-circle-large" th:src="${datosPokemon.imagen}" alt="Poke">
+        <div class="poke-stats-mini">
+            <strong>Experiencia:</strong> <span th:text="${datosPokemon.experiencia}"></span> |
+            <strong>Altura:</strong> <span th:text="${datosPokemon.altura}"></span>m |
+            <strong>Peso:</strong> <span th:text="${datosPokemon.peso}"></span>kg
+        </div>
+    </div>
+
     <div class="card">
-        <div class="card-header">Consultas Externas (API)</div>
+        <div class="card-header">Consultas de Red</div>
         <form action="/funcional/pokemon" method="get">
-            <input class="input-text" type="text" name="nombrePokemon" placeholder="Introduzca el parámetro de búsqueda" required>
-            <button class="btn-primary" type="submit">Ejecutar Consulta</button>
+            <input class="input-text" type="text" name="nombrePokemon" placeholder="Nombre para búsqueda API">
+            <button class="btn-primary" type="submit">Sincronizar API</button>
         </form>
-        <span class="text-muted">Parámetros válidos: lucario, charizard. Parámetros no válidos: agumon.</span>
+
+        <form action="/funcional/basedatos" method="get" style="margin-top: 15px;">
+            <input class="input-text" type="text" name="nombreTabla" placeholder="Tabla (entrenadores)">
+            <button class="btn-primary btn-secondary" type="submit">Consultar PostgreSQL</button>
+        </form>
     </div>
 
     <div class="card">
-        <div class="card-header">Base de Datos Interna</div>
-        <form action="/funcional/basedatos" method="get">
-            <input class="input-text" type="text" name="nombreTabla" placeholder="Nombre de la tabla" required>
-            <button class="btn-secondary" type="submit">Consultar Tabla</button>
+        <div class="card-header">Sistema de Archivos y Tests</div>
+        <form action="/funcional/archivo" method="get">
+            <input class="input-text" type="text" name="nombreArchivo" placeholder="Archivo (ej: equipo)">
+            <button class="btn-primary" type="submit">Cargar Informe TXT</button>
         </form>
-        <span class="text-muted">Tablas disponibles: entrenadores.</span>
-    </div>
 
-    <div class="grid-2">
-        <div class="card" style="margin-bottom: 0;">
-            <div class="card-header">Procesamiento de Archivos</div>
-            <form action="/funcional/archivo" method="get">
-                <input class="input-text" type="text" name="nombreArchivo" placeholder="Nombre del documento" required>
-                <button class="btn-secondary" type="submit">Procesar Archivo</button>
-            </form>
-        </div>
-
-        <div class="card" style="margin-bottom: 0;">
-            <div class="card-header">Añadir Registro DB</div>
-            <form action="/funcional/basedatos/añadir" method="post" style="display: flex; gap: 8px;">
-                <input class="input-text" type="text" name="nombre" placeholder="Nombre" required style="width: 70%;">
-                <input class="input-text" type="number" name="medallas" placeholder="M" required style="width: 30%;">
-            </form>
-            <button class="btn-primary" type="submit" onclick="this.previousElementSibling.submit()">Registrar Dato</button>
-        </div>
-    </div>
-
-    <div class="card" style="margin-top: 16px;">
-        <div class="card-header">Entorno de Pruebas (Test Excepciones)</div>
-        <form action="/funcional/simular-error" method="get" style="display: flex; gap: 8px;">
-            <select name="codigo" required>
-                <option value="200">Test: Conexión Estable (200)</option>
-                <option value="400">Test: Petición Incorrecta (400)</option>
-                <option value="401">Test: Acceso Denegado (401)</option>
-                <option value="404">Test: Recurso no Encontrado (404)</option>
-                <option value="500">Test: Fallo Crítico Servidor (500)</option>
+        <form action="/funcional/simular-error" method="get" style="margin-top: 15px;">
+            <select class="input-text" name="codigo">
+                <option value="200">Estado: OK (200)</option>
+                <option value="400">Estado: BAD REQUEST (400)</option>
+                <option value="401">Estado: UNAUTHORIZED (401)</option>
+                <option value="404">Estado: NOT FOUND (404)</option>
+                <option value="500">Estado: CRITICAL ERROR (500)</option>
             </select>
-            <button class="btn-secondary" type="submit" style="margin-top: 0; width: 40%;">Ejecutar Test</button>
+            <button class="btn-primary btn-tertiary" type="submit">Simular Excepción</button>
         </form>
-        <span class="text-muted">Utilice esta herramienta para verificar el comportamiento del gestor de excepciones del sistema distribuido.</span>
     </div>
 
 </div>
 
+<script>
+    const audio = document.getElementById('bg-audio');
+    const btn = document.getElementById('mute-btn');
+    let reproduciendo = false;
+
+    function gestionarAudio(event) {
+        event.stopPropagation();
+
+        if (!reproduciendo) {
+            audio.play().then(() => {
+                reproduciendo = true;
+                btn.innerText = "MUTE";
+                audio.muted = false;
+            }).catch(e => console.log("Bloqueo del navegador: " + e));
+        } else {
+            if (audio.muted) {
+                audio.muted = false;
+                btn.innerText = "MUTE";
+            } else {
+                audio.muted = true;
+                btn.innerText = "ON";
+            }
+        }
+    }
+
+    document.body.addEventListener('click', function() {
+        if (!reproduciendo) {
+            audio.play().then(() => {
+                reproduciendo = true;
+                btn.innerText = "MUTE";
+            }).catch(e => console.log("Esperando interacción..."));
+        }
+    }, { once: true });
+</script>
 </body>
 </html>

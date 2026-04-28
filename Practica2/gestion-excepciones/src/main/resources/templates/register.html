@@ -1,59 +1,31 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Registro - Sistema Pokedex</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <title>Registro de Entrenador</title>
+    <link rel="stylesheet" th:href="@{/css/register.css}">
 </head>
 <body>
-<div class="auth-container">
-    <div class="box">
-        <h2 class="text-center">Alta en el Sistema</h2>
-        <p class="header-subtitle text-center">Formulario de registro para nuevo personal.</p>
-
-        <div th:if="${error}" class="alert-error" th:text="${error}"></div>
-
-        <form th:action="@{/register}" method="post">
-            <div class="form-group">
-                <label>Identificador de Usuario</label>
-                <input type="text" name="username" required>
-            </div>
-
-            <div class="form-group">
-                <label>Clave de Seguridad</label>
-                <input type="password" name="password" required>
-            </div>
-
-            <div class="form-group">
-                <label>Confirmación de Clave</label>
-                <input type="password" name="confirmPassword" required>
-            </div>
-
-            <hr>
-
-            <div class="form-group">
-                <label>Pregunta de Recuperación</label>
-                <select name="securityQuestion" required>
-                    <option value="" disabled selected>Seleccione una opción...</option>
-                    <option value="pokemon_inicial">Especie del primer Pokémon registrado</option>
-                    <option value="ciudad_natal">Región o ciudad de origen</option>
-                    <option value="mascota_infancia">Nombre de la primera mascota</option>
-                    <option value="lider_favorito">Líder de gimnasio de referencia</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Respuesta de Seguridad</label>
-                <input type="text" name="securityAnswer" required>
-            </div>
-
-            <button type="submit" class="btn-primary">Procesar Alta</button>
-        </form>
-
-        <div class="links-container">
-            <a href="/login">Volver al portal de autenticación</a>
-        </div>
-    </div>
+<div class="box">
+    <h2>Nuevo Registro</h2>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <form th:action="@{/register}" method="post">
+        <label>Nombre de Usuario</label>
+        <input type="text" name="username" required>
+        <label>Contraseña</label>
+        <input type="password" name="password" required>
+        <label>Confirmar Contraseña</label>
+        <input type="password" name="confirmPassword" required>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <label>Pregunta de Seguridad</label>
+        <select name="securityQuestion" required>
+            <option value="pokemon_inicial">¿Cuál fue tu primer Pokémon?</option>
+            <option value="ciudad_natal">¿En qué ciudad naciste?</option>
+        </select>
+        <input type="text" name="securityAnswer" placeholder="Tu respuesta" required>
+        <button type="submit">Enviar Registro</button>
+    </form>
+    <a href="/login">Ya tengo una cuenta</a>
 </div>
 </body>
 </html>

@@ -1,22 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Inicio - Administración Pokedex</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <title>Portal de Acceso - Sistema Distribuido</title>
+    <link rel="stylesheet" th:href="@{/css/index.css}">
 </head>
 <body>
-<div class="auth-container">
-    <div class="box text-center">
-        <h2>Portal de Acceso</h2>
-        <p class="header-subtitle">Sistema de gestión distribuida de registros.</p>
+<div class="portal-card">
+    <h1>Terminal de Gestión</h1>
+    <p>Base de Datos Centralizada y Sistema de Diagnóstico de Excepciones</p>
 
-        <a href="/pruebas-api" class="btn-secondary" style="display: block; text-align: center; box-sizing: border-box;">Acceder al Panel de Control</a>
+    <a href="/pruebas-api" class="btn-access">Ingresar al Panel de Control</a>
 
-        <form th:action="@{/logout}" method="post" style="margin-top: 24px;">
-            <button type="submit" style="background: none; border: none; color: #6B7280; text-decoration: underline; cursor: pointer; font-size: 0.9em;">Cerrar sesión segura</button>
-        </form>
-    </div>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn-logout">Finalizar sesión de usuario</button>
+    </form>
 </div>
 </body>
 </html>
