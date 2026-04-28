@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
+import java.util.List;
 
 @Controller
 public class ErrorTestController {
@@ -66,13 +67,13 @@ public class ErrorTestController {
         return "redirect:/login?success";
     }
     @GetMapping("/funcional/archivo")
-    public String probarArchivo(@RequestParam String nombreArchivo, Model model) throws Exception {
-        String resultado = apiService.leerArchivo(nombreArchivo);
-        Map<String, Object> map = objectMapper.readValue(resultado, Map.class);
-        // Ahora Python nos manda una lista de Pokemons bajo la clave "equipo"
-        model.addAttribute("equipoPokemon", map.get("equipo"));
+    public String probarArchivo(@RequestParam String nombreArchivo, Model model) {
+        List equipo = apiService.leerArchivo(nombreArchivo);
+
+        model.addAttribute("equipoPokemon", equipo);
         model.addAttribute("nombreArchivo", nombreArchivo);
-        return "pruebas_api";
+
+        return "pruebas_api"; // (o como se llame tu archivo HTML)
     }
     @GetMapping("/funcional/basedatos")
     public String probarBD(@RequestParam String nombreTabla, Model model) throws Exception {

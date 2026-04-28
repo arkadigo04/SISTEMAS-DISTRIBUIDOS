@@ -4,6 +4,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
+
 @Service
 public class ApiService {
 
@@ -12,8 +14,8 @@ public class ApiService {
             ? System.getenv("PYTHON_URL")
             : "http://localhost:5000/api";
 
-    public String leerArchivo(String nombre) {
-        return restClient.get().uri(BASE_URL + "/archivo/" + nombre).retrieve().body(String.class);
+    public List leerArchivo(String nombreArchivo) {
+        return restClient.get().uri(BASE_URL + "/archivo/" + nombreArchivo).retrieve().body(List.class);
     }
 
     public String consultarBD(String tabla) {
