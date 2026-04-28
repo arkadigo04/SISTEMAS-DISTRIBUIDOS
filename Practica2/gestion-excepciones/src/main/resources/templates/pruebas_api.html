@@ -2,56 +2,133 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Aplicación Funcional</title>
+    <title>Pokedex Distribuida</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9;}
-        .contenedor { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .caja { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        .btn { padding: 10px 15px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold;}
-        .alerta-error { background-color: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        .alerta-exito { background-color: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        input[type="text"] { padding: 8px; width: 60%; margin-right: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333;}
+        .contenedor { max-width: 900px; margin: auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #dc3545; font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px;}
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .caja { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 5px solid #007bff;}
+        .caja.rojo { border-top-color: #dc3545; }
+        .caja.verde { border-top-color: #28a745; }
+
+        input[type="text"], input[type="number"] { padding: 10px; width: calc(100% - 22px); margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        button { padding: 10px 15px; width: 100%; cursor: pointer; border: none; border-radius: 6px; color: white; font-weight: bold; text-transform: uppercase; transition: 0.2s;}
+        button:hover { opacity: 0.9; }
+
+        .alerta-error { background-color: #f8d7da; border-left: 5px solid #721c24; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+        .alerta-exito { background-color: #d4edda; border-left: 5px solid #155724; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+
+        /* Estilos de Resultados */
+        .resultado-box { margin-top: 20px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;}
+        .poke-imagen { max-width: 200px; filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.2)); }
+        .poke-stats { display: flex; justify-content: space-around; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 15px;}
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #dc3545; color: white; }
+
+        .archivo-nota { font-family: 'Courier New', Courier, monospace; background: #fffde7; padding: 20px; border-left: 5px solid #ffeb3b; text-align: left; white-space: pre-line;}
     </style>
 </head>
 <body>
 <div class="contenedor">
-    <h1>Aplicación Distribuida Completa</h1>
-    <p>Introduce datos correctos para ver la app funcionar, o datos incorrectos para activar el Gestor de Excepciones.</p>
+    <div class="header">
+        <h1>Pokédex Distribuida</h1>
+        <p>Conectando Java y Python mediante Docker Containers</p>
+        <a href="/">Volver al panel de control</a>
+    </div>
 
-    <div th:if="${exito}" class="alerta-exito" th:text="${exito}"></div>
     <div th:if="${error_traducido}" class="alerta-error">
-        <h3 style="margin-top:0;">Excepción Interceptada por Spring</h3>
+        <h3 style="margin-top:0;">EXCEPCIÓN INTERCEPTADA</h3>
         <p th:text="${error_traducido}"></p>
     </div>
-
-    <div class="caja">
-        <h3>1. Lector de Archivos de Texto</h3>
-        <form action="/funcional/archivo" method="get">
-            <input type="text" name="nombreArchivo" placeholder="Escribe 'notas' para éxito" required>
-            <button type="submit" class="btn" style="background-color: #007bff;">Leer Archivo</button>
-        </form>
-        <small style="color: gray;">Prueba con <b>notas</b> (funcionará) o con <b>inventado</b> (lanzará la excepción).</small>
+    <div th:if="${exitoGeneral}" class="alerta-exito">
+        <p th:text="${exitoGeneral}"></p>
     </div>
 
-    <div class="caja">
-        <h3>2. Consulta Base de Datos Local (Entrenadores)</h3>
-        <form action="/funcional/basedatos" method="get">
-            <input type="text" name="nombreTabla" placeholder="Escribe 'entrenadores' para éxito" required>
-            <button type="submit" class="btn" style="background-color: #dc3545;">Consultar Liga</button>
-        </form>
-        <small style="color: gray;">Prueba con la tabla <b>entrenadores</b> (funcionará) o con la tabla <b>digimon</b> (lanzará la excepción).</small>
+    <div th:if="${datosPokemon}" class="resultado-box">
+        <h2 th:text="${datosPokemon.nombre}"></h2>
+        <img class="poke-imagen" th:src="${datosPokemon.imagen}" alt="Imagen Pokemon">
+        <div class="poke-stats">
+            <div><strong>Exp. Base:</strong> <br> <span th:text="${datosPokemon.experiencia}"></span> XP</div>
+            <div><strong>Altura:</strong> <br> <span th:text="${datosPokemon.altura}"></span> m</div>
+            <div><strong>Peso:</strong> <br> <span th:text="${datosPokemon.peso}"></span> kg</div>
+        </div>
     </div>
 
-    <div class="caja">
-        <h3>3. Buscador PokeAPI (Terceros)</h3>
-        <form action="/funcional/pokemon" method="get">
-            <input type="text" name="nombrePokemon" placeholder="Escribe 'ditto' para éxito" required>
-            <button type="submit" class="btn" style="background-color: #28a745;">Buscar API</button>
-        </form>
-        <small style="color: gray;">Prueba con <b>ditto</b> (funcionará) o con <b>digimon</b> (lanzará la excepción).</small>
+    <div th:if="${datosBD}" class="resultado-box">
+        <h2>Registros de la tabla: <span th:text="${nombreTabla}"></span></h2>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Nombre del Entrenador</th>
+                <th>Medallas Obtenidas</th>
+            </tr>
+            <tr th:each="fila : ${datosBD}">
+                <td th:text="${fila.id}"></td>
+                <td th:text="${fila.nombre}"></td>
+                <td th:text="${fila.medallas} + ' 🏅'"></td>
+            </tr>
+        </table>
     </div>
 
-    <br><a href="/">Volver al inicio</a>
+    <div th:if="${equipoPokemon}" class="resultado-box">
+        <h2>Equipo extraído del archivo: <span th:text="${nombreArchivo} + '.txt'"></span></h2>
+        <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 15px;">
+            <div th:each="poke : ${equipoPokemon}" class="caja" style="text-align: center; padding: 10px;">
+                <h3 th:text="${poke.nombre}" style="font-size: 1.1em; margin-bottom: 5px;"></h3>
+                <img class="poke-imagen" th:src="${poke.imagen}" alt="Imagen" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+    </div>
+
+    <hr style="margin: 30px 0; border: 1px solid #ddd;">
+
+    <div class="grid">
+
+        <div class="caja verde">
+            <h3>🔍 Buscador PokeAPI</h3>
+            <form action="/funcional/pokemon" method="get">
+                <input type="text" name="nombrePokemon" placeholder="Ej: charizard, gengar..." required>
+                <button type="submit" style="background-color: #28a745;">Analizar Pokémon</button>
+            </form>
+            <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>lucario</b> (✅) | <b>agumon</b> (❌)</small>
+        </div>
+
+        <div class="caja rojo">
+            <h3>Consultar Liga (SQLite)</h3>
+            <form action="/funcional/basedatos" method="get">
+                <input type="text" name="nombreTabla" placeholder="Ej: entrenadores" required>
+                <button type="submit" style="background-color: #dc3545;">Ver Registros</button>
+            </form>
+            <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>entrenadores</b> (✅) | <b>digimon</b> (❌)</small>
+        </div>
+
+        <div class="caja" style="grid-column: span 2; display: flex; gap: 20px; border-top-color: #ffc107;">
+            <div style="flex: 1;">
+                <h3>Archivos de Investigación</h3>
+                <form action="/funcional/archivo" method="get">
+                    <input type="text" name="nombreArchivo" placeholder="Ej: equipo" required>
+                    <button type="submit" style="background-color: #ffc107; color: #333;">Leer Informe</button>
+                </form>
+                <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>equipo</b> (✅) | <b>falso</b> (❌)</small>
+            </div>
+
+            <div style="flex: 1; border-left: 1px solid #eee; padding-left: 20px;">
+                <h3>Inscribir Entrenador</h3>
+                <form action="/funcional/basedatos/añadir" method="post" style="display: flex; gap:10px;">
+                    <input type="text" name="nombre" placeholder="Nombre" required style="width: 60%;">
+                    <input type="number" name="medallas" placeholder="Nº Medallas" required min="0" max="8" style="width: 30%;">
+                    <button type="submit" style="background-color: #17a2b8; width: auto;">Guardar</button>
+                </form>
+                <small style="color: gray;">(Añádelo y luego usa el botón rojo de consultar para verlo en la tabla)</small>
+            </div>
+        </div>
+
+    </div>
 </div>
 </body>
 </html>
