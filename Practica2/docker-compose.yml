@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-  # 1. LA BASE DE DATOS (PostgreSQL)
   db-usuarios:
     image: postgres:15
     container_name: db-usuarios
@@ -14,21 +11,19 @@ services:
     volumes:
       - ./datos_db:/var/lib/postgresql/data
     networks:
-      - red_pokemon
+      - red_pokemon    # <--- ESTA ES LA LÍNEA CLAVE QUE FALTABA
 
-  # 2. LA API DE PYTHON
   python-api:
     build: ./api_python
-    volumes:
-      - ./api_python:/app
-    ports:
-      - "5000:5000"
+    container_name: python-api
+    depends_on:
+      - db-usuarios
     networks:
       - red_pokemon
 
-  # 3. LA APP DE JAVA
   java-app:
     build: ./gestion-excepciones
+    container_name: java-app
     ports:
       - "8080:8080"
     environment:

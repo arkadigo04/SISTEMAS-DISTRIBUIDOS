@@ -7,8 +7,8 @@ WORKDIR /app
 # Copiamos todos los archivos a esa carpeta
 COPY . /app
 
-# Instalamos las librerías necesarias
-RUN pip install flask requests
+# Instalamos las librerías necesarias leyendo el archivo de requisitos
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Exponemos el puerto
 EXPOSE 5000

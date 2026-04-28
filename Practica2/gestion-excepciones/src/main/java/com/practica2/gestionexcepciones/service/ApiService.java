@@ -34,4 +34,12 @@ public class ApiService {
                 .retrieve()
                 .body(String.class);
     }
+
+    // NUEVO: Método para probar excepciones
+    public String simularError(String codigoError) {
+        return restClient.get()
+                .uri(BASE_URL + "/test-error/" + codigoError)
+                .retrieve()
+                .body(String.class);
+    }
 }

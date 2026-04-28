@@ -1,0 +1,129 @@
+/* estilos.css - Hoja de Estilos Unificada */
+body {
+    background-color: #E5E9F0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    color: #2E3440;
+}
+
+/* --- Layout para Vistas de Autenticación --- */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.box {
+    background: #FFFFFF;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    border-top: 6px solid #E3350D; /* Rojo Pokédex */
+}
+
+/* --- Tipografía y Textos --- */
+h1, h2, h3 { color: #1A1A1A; margin-top: 0; }
+.text-center { text-align: center; }
+.header-subtitle { font-size: 0.9em; color: #6B7280; margin-bottom: 24px; }
+hr { border: 0; border-top: 1px solid #E5E7EB; margin: 20px 0; }
+
+/* --- Formularios --- */
+.form-group { text-align: left; margin-bottom: 16px; }
+label { display: block; font-size: 0.85em; font-weight: 600; color: #4C566A; margin-bottom: 6px; }
+
+input[type="text"], input[type="password"], input[type="number"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #D8DEE9;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+    background-color: #F8F9FB;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #3B4CCA; /* Azul Pokémon */
+    box-shadow: 0 0 0 3px rgba(59, 76, 202, 0.1);
+}
+
+/* --- Botones --- */
+.btn-primary {
+    background-color: #E3350D;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+.btn-primary:hover { background-color: #CC2F0B; }
+
+.btn-secondary {
+    background-color: #3B4CCA;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+.btn-secondary:hover { background-color: #3544B5; }
+
+/* --- Alertas y Notificaciones --- */
+.alert-error {
+    color: #B91C1C;
+    background-color: #FEF2F2;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    border-left: 4px solid #B91C1C;
+    font-size: 0.9em;
+    text-align: left;
+}
+.alert-success {
+    color: #047857;
+    background-color: #ECFDF5;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    border-left: 4px solid #047857;
+    font-size: 0.9em;
+    text-align: left;
+}
+.pregunta-box {
+    background: #F0F4F8;
+    padding: 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #2E3440;
+    margin-bottom: 20px;
+    border-left: 4px solid #FFCB05; /* Amarillo Pokémon */
+}
+
+/* --- Enlaces de Navegación --- */
+.links-container {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.9em;
+    text-align: center;
+}
+a { color: #3B4CCA; text-decoration: none; font-weight: 500; }
+a:hover { text-decoration: underline; }
+.link-danger { color: #E3350D; }

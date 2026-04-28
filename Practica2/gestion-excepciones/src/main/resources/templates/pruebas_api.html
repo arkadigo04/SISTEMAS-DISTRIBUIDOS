@@ -2,133 +2,117 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Pokedex Distribuida</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333;}
-        .contenedor { max-width: 900px; margin: auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #dc3545; font-size: 2.5em; text-transform: uppercase; letter-spacing: 2px;}
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .caja { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 5px solid #007bff;}
-        .caja.rojo { border-top-color: #dc3545; }
-        .caja.verde { border-top-color: #28a745; }
-
-        input[type="text"], input[type="number"] { padding: 10px; width: calc(100% - 22px); margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; }
-        button { padding: 10px 15px; width: 100%; cursor: pointer; border: none; border-radius: 6px; color: white; font-weight: bold; text-transform: uppercase; transition: 0.2s;}
-        button:hover { opacity: 0.9; }
-
-        .alerta-error { background-color: #f8d7da; border-left: 5px solid #721c24; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-        .alerta-exito { background-color: #d4edda; border-left: 5px solid #155724; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
-
-        /* Estilos de Resultados */
-        .resultado-box { margin-top: 20px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;}
-        .poke-imagen { max-width: 200px; filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.2)); }
-        .poke-stats { display: flex; justify-content: space-around; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-top: 15px;}
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #dc3545; color: white; }
-
-        .archivo-nota { font-family: 'Courier New', Courier, monospace; background: #fffde7; padding: 20px; border-left: 5px solid #ffeb3b; text-align: left; white-space: pre-line;}
-    </style>
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
 <body>
-<div class="contenedor">
-    <div class="header">
-        <h1>Pokédex Distribuida</h1>
-        <p>Conectando Java y Python mediante Docker Containers</p>
-        <a href="/">Volver al panel de control</a>
+
+<div class="navbar">
+    <h1>Sistema Distribuido</h1>
+    <a href="/">Volver al Inicio</a>
+</div>
+
+<div class="container">
+
+    <div th:if="${error_traducido}" class="alert alert-danger">
+        <div class="alert-title">Excepción Crítica Detectada</div>
+        <span th:text="${error_traducido}"></span>
     </div>
 
-    <div th:if="${error_traducido}" class="alerta-error">
-        <h3 style="margin-top:0;">EXCEPCIÓN INTERCEPTADA</h3>
-        <p th:text="${error_traducido}"></p>
-    </div>
-    <div th:if="${exitoGeneral}" class="alerta-exito">
-        <p th:text="${exitoGeneral}"></p>
+    <div th:if="${error_no_critico}" class="alert alert-warning">
+        <div class="alert-title">Aviso del Sistema</div>
+        <span th:text="${error_no_critico}"></span>
     </div>
 
-    <div th:if="${datosPokemon}" class="resultado-box">
-        <h2 th:text="${datosPokemon.nombre}"></h2>
-        <img class="poke-imagen" th:src="${datosPokemon.imagen}" alt="Imagen Pokemon">
-        <div class="poke-stats">
-            <div><strong>Exp. Base:</strong> <br> <span th:text="${datosPokemon.experiencia}"></span> XP</div>
-            <div><strong>Altura:</strong> <br> <span th:text="${datosPokemon.altura}"></span> m</div>
-            <div><strong>Peso:</strong> <br> <span th:text="${datosPokemon.peso}"></span> kg</div>
+    <div th:if="${exitoGeneral}" class="alert alert-success">
+        <span th:text="${exitoGeneral}"></span>
+    </div>
+
+    <div th:if="${datosPokemon}" class="card">
+        <div class="card-header">Detalles del Registro: <span th:text="${datosPokemon.nombre}"></span></div>
+        <img class="poke-img" th:src="${datosPokemon.imagen}" alt="Imagen del registro">
+        <div class="stats-box">
+            <div><strong>Exp. Base:</strong> <span th:text="${datosPokemon.experiencia}"></span></div>
+            <div><strong>Altura:</strong> <span th:text="${datosPokemon.altura}"></span> m</div>
+            <div><strong>Peso:</strong> <span th:text="${datosPokemon.peso}"></span> kg</div>
         </div>
     </div>
 
-    <div th:if="${datosBD}" class="resultado-box">
-        <h2>Registros de la tabla: <span th:text="${nombreTabla}"></span></h2>
+    <div th:if="${datosBD}" class="card">
+        <div class="card-header">Resultados de la tabla: <span th:text="${nombreTabla}"></span></div>
         <table>
-            <tr>
-                <th>ID</th>
-                <th>Nombre del Entrenador</th>
-                <th>Medallas Obtenidas</th>
-            </tr>
+            <tr><th>ID</th><th>Nombre de Entrenador</th><th>Medallas</th></tr>
             <tr th:each="fila : ${datosBD}">
                 <td th:text="${fila.id}"></td>
                 <td th:text="${fila.nombre}"></td>
-                <td th:text="${fila.medallas} + ' 🏅'"></td>
+                <td th:text="${fila.medallas}"></td>
             </tr>
         </table>
     </div>
 
-    <div th:if="${equipoPokemon}" class="resultado-box">
-        <h2>Equipo extraído del archivo: <span th:text="${nombreArchivo} + '.txt'"></span></h2>
-        <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 15px;">
-            <div th:each="poke : ${equipoPokemon}" class="caja" style="text-align: center; padding: 10px;">
-                <h3 th:text="${poke.nombre}" style="font-size: 1.1em; margin-bottom: 5px;"></h3>
-                <img class="poke-imagen" th:src="${poke.imagen}" alt="Imagen" style="max-width: 100%; height: auto;">
+    <div th:if="${equipoPokemon}" class="card">
+        <div class="card-header">Datos importados del archivo: <span th:text="${nombreArchivo} + '.txt'"></span></div>
+        <div class="grid-4">
+            <div th:each="poke : ${equipoPokemon}">
+                <img th:src="${poke.imagen}" alt="Imagen" style="width: 100%; border-radius: 8px; border: 1px solid #CED0D4;">
+                <div style="font-weight: 600; font-size: 14px; margin-top: 8px;" th:text="${poke.nombre}"></div>
             </div>
         </div>
     </div>
 
-    <hr style="margin: 30px 0; border: 1px solid #ddd;">
-
-    <div class="grid">
-
-        <div class="caja verde">
-            <h3>🔍 Buscador PokeAPI</h3>
-            <form action="/funcional/pokemon" method="get">
-                <input type="text" name="nombrePokemon" placeholder="Ej: charizard, gengar..." required>
-                <button type="submit" style="background-color: #28a745;">Analizar Pokémon</button>
-            </form>
-            <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>lucario</b> (✅) | <b>agumon</b> (❌)</small>
-        </div>
-
-        <div class="caja rojo">
-            <h3>Consultar Liga (SQLite)</h3>
-            <form action="/funcional/basedatos" method="get">
-                <input type="text" name="nombreTabla" placeholder="Ej: entrenadores" required>
-                <button type="submit" style="background-color: #dc3545;">Ver Registros</button>
-            </form>
-            <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>entrenadores</b> (✅) | <b>digimon</b> (❌)</small>
-        </div>
-
-        <div class="caja" style="grid-column: span 2; display: flex; gap: 20px; border-top-color: #ffc107;">
-            <div style="flex: 1;">
-                <h3>Archivos de Investigación</h3>
-                <form action="/funcional/archivo" method="get">
-                    <input type="text" name="nombreArchivo" placeholder="Ej: equipo" required>
-                    <button type="submit" style="background-color: #ffc107; color: #333;">Leer Informe</button>
-                </form>
-                <small style="color: gray; display:block; margin-top:5px;">Prueba: <b>equipo</b> (✅) | <b>falso</b> (❌)</small>
-            </div>
-
-            <div style="flex: 1; border-left: 1px solid #eee; padding-left: 20px;">
-                <h3>Inscribir Entrenador</h3>
-                <form action="/funcional/basedatos/añadir" method="post" style="display: flex; gap:10px;">
-                    <input type="text" name="nombre" placeholder="Nombre" required style="width: 60%;">
-                    <input type="number" name="medallas" placeholder="Nº Medallas" required min="0" max="8" style="width: 30%;">
-                    <button type="submit" style="background-color: #17a2b8; width: auto;">Guardar</button>
-                </form>
-                <small style="color: gray;">(Añádelo y luego usa el botón rojo de consultar para verlo en la tabla)</small>
-            </div>
-        </div>
-
+    <div class="card">
+        <div class="card-header">Consultas Externas (API)</div>
+        <form action="/funcional/pokemon" method="get">
+            <input class="input-text" type="text" name="nombrePokemon" placeholder="Introduzca el parámetro de búsqueda" required>
+            <button class="btn-primary" type="submit">Ejecutar Consulta</button>
+        </form>
+        <span class="text-muted">Parámetros válidos: lucario, charizard. Parámetros no válidos: agumon.</span>
     </div>
+
+    <div class="card">
+        <div class="card-header">Base de Datos Interna</div>
+        <form action="/funcional/basedatos" method="get">
+            <input class="input-text" type="text" name="nombreTabla" placeholder="Nombre de la tabla" required>
+            <button class="btn-secondary" type="submit">Consultar Tabla</button>
+        </form>
+        <span class="text-muted">Tablas disponibles: entrenadores.</span>
+    </div>
+
+    <div class="grid-2">
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">Procesamiento de Archivos</div>
+            <form action="/funcional/archivo" method="get">
+                <input class="input-text" type="text" name="nombreArchivo" placeholder="Nombre del documento" required>
+                <button class="btn-secondary" type="submit">Procesar Archivo</button>
+            </form>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">Añadir Registro DB</div>
+            <form action="/funcional/basedatos/añadir" method="post" style="display: flex; gap: 8px;">
+                <input class="input-text" type="text" name="nombre" placeholder="Nombre" required style="width: 70%;">
+                <input class="input-text" type="number" name="medallas" placeholder="M" required style="width: 30%;">
+            </form>
+            <button class="btn-primary" type="submit" onclick="this.previousElementSibling.submit()">Registrar Dato</button>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+        <div class="card-header">Entorno de Pruebas (Test Excepciones)</div>
+        <form action="/funcional/simular-error" method="get" style="display: flex; gap: 8px;">
+            <select name="codigo" required>
+                <option value="200">Test: Conexión Estable (200)</option>
+                <option value="400">Test: Petición Incorrecta (400)</option>
+                <option value="401">Test: Acceso Denegado (401)</option>
+                <option value="404">Test: Recurso no Encontrado (404)</option>
+                <option value="500">Test: Fallo Crítico Servidor (500)</option>
+            </select>
+            <button class="btn-secondary" type="submit" style="margin-top: 0; width: 40%;">Ejecutar Test</button>
+        </form>
+        <span class="text-muted">Utilice esta herramienta para verificar el comportamiento del gestor de excepciones del sistema distribuido.</span>
+    </div>
+
 </div>
+
 </body>
 </html>

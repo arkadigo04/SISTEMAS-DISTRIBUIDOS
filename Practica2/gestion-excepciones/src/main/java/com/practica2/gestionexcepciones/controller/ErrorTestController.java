@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
 
@@ -152,5 +153,27 @@ public class ErrorTestController {
             model.addAttribute("pregunta", "¿Intentando hackear? La respuesta no es válida.");
             return "reset_password";
         }
+    }
+
+    @GetMapping("/funcional/simular-error")
+    public String probarExcepciones(@RequestParam String codigo, Model model) {
+        try {
+            String resultado = apiService.simularError(codigo);
+            model.addAttribute("exitoGeneral", "La API respondió correctamente: " + resultado);
+
+        } catch (HttpClientErrorException e) {
+            // EXCEPCIONES NO CRÍTICAS (400, 401, 404) -> Se traducen y se muestran en la misma pantalla
+            String mensajeTraducido = switch (e.getStatusCode().value()) {
+                case 400 -> "Atención (400): La petición está mal formulada. Por favor, revisa los datos.";
+                case 401 -> "Acceso Denegado (401): No tienes permisos suficientes para ver esta información.";
+                case 404 -> "Extraviado (404): No hemos podido encontrar lo que buscas en nuestros registros.";
+                default -> "Advertencia: Ocurrió un error no crítico inesperado.";
+            };
+            model.addAttribute("error_no_critico", mensajeTraducido);
+        }
+        // Nota: Los errores 5xx (HttpServerErrorException) no los capturamos aquí.
+        // Dejamos que suban al GlobalExceptionHandler para mostrar la pantalla crítica de caída de sistema.
+
+        return "pruebas_api";
     }
 }
