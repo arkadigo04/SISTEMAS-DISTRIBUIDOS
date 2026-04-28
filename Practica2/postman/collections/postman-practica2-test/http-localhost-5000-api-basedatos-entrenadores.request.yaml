@@ -1,0 +1,12 @@
+$kind: http-request
+name: http://localhost:5000/api/basedatos/entrenadores
+url: http://localhost:5000/api/basedatos/entrenadores
+method: GET
+body:
+  type: json
+  content: |-
+    {
+        "nombre":"pepe",
+        "medallas":"5"
+    }
+order: 1777370999592
