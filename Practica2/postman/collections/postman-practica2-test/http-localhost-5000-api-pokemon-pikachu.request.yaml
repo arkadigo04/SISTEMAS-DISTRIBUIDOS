@@ -1,0 +1,23 @@
+$kind: http-request
+name: http://localhost:5000/api/pokemon/pikachu
+url: http://localhost:5000/api/pokemon/pikachu
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("La operación fue exitosa (Status 200)", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("La respuesta debe tener formato JSON", function () {
+          pm.response.to.be.json;
+      });
+
+
+      pm.test("El sistema encontró al Pokémon correcto", function () {
+          var jsonData = pm.response.json();
+          
+          pm.expect(jsonData.nombre.toLowerCase()).to.eql("pikachu");
+      });
+    language: text/javascript
+order: 4498263226977133

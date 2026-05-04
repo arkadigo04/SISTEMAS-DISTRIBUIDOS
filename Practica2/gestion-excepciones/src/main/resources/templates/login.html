@@ -12,9 +12,13 @@
     <div th:if="${param.logout}" class="alert-success">Sesión cerrada con éxito.</div>
     <div th:if="${param.success}" class="alert-success">Inscripción completada correctamente.</div>
 
+    <div style="background-color: #e2f3f5; color: #0c5460; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9em; border-left: 4px solid #17a2b8; text-align: left;">
+        <strong>Modo Evaluación:</strong> Credenciales de administrador escritas por defecto para facilitar el acceso admin/1234.
+    </div>
+
     <form th:action="@{/login}" method="post">
-        <input type="text" name="username" placeholder="Nombre de usuario" required autofocus>
-        <input type="password" name="password" placeholder="Contraseña" required>
+        <input type="text" name="username" placeholder="Nombre de usuario" value="admin" required autofocus>
+        <input type="password" name="password" placeholder="Contraseña" value="1234" required>
         <button type="submit">Acceder</button>
     </form>
     <a href="/register">Crear una nueva cuenta</a>

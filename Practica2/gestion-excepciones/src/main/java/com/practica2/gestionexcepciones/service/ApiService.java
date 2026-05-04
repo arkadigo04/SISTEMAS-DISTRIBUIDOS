@@ -26,7 +26,6 @@ public class ApiService {
         return restClient.get().uri(BASE_URL + "/pokemon/" + nombre).retrieve().body(String.class);
     }
 
-    // NUEVO: Método para guardar entrenadores
     public String añadirEntrenador(String nombre, int medallas) {
         String jsonBody = String.format("{\"nombre\": \"%s\", \"medallas\": %d}", nombre, medallas);
         return restClient.post()
@@ -37,7 +36,6 @@ public class ApiService {
                 .body(String.class);
     }
 
-    // NUEVO: Método para probar excepciones
     public String simularError(String codigoError) {
         return restClient.get()
                 .uri(BASE_URL + "/test-error/" + codigoError)

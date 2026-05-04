@@ -11,11 +11,14 @@ services:
     volumes:
       - ./datos_db:/var/lib/postgresql/data
     networks:
-      - red_pokemon    # <--- ESTA ES LA LÍNEA CLAVE QUE FALTABA
+      - red_pokemon
 
   python-api:
     build: ./api_python
     container_name: python-api
+    # AÑADIMOS LA DIRECTIVA PORTS AQUÍ PARA QUE POSTMAN PUEDA ENTRAR:
+    ports:
+      - "5000:5000"
     depends_on:
       - db-usuarios
     networks:

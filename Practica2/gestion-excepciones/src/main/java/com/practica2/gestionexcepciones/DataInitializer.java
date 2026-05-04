@@ -21,7 +21,6 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.findByUsername("admin").isEmpty()) {
             User admin = new User();
             admin.setUsername("admin");
-            // Guardar la contraseña "1234" encriptada
             admin.setPassword(passwordEncoder.encode("1234"));
             userRepository.save(admin);
             System.out.println("Usuario 'admin' creado con contraseña '1234'");

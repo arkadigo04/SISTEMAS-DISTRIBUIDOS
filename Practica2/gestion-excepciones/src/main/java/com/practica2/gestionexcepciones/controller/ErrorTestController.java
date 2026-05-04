@@ -54,16 +54,13 @@ public class ErrorTestController {
                                    @RequestParam String securityAnswer,
                                    Model model) {
 
-        // Comprobamos si las contraseñas coinciden
         if (!password.equals(confirmPassword)) {
             model.addAttribute("error", "Las contraseñas no coinciden. Inténtalo de nuevo.");
             return "register"; // Devolvemos a la página de registro con el error
         }
 
-        // Si coinciden, lo guardamos en la base de datos
         userService.registrarUsuario(username, password, securityQuestion, securityAnswer);
 
-        // Redirigimos al login con mensaje de éxito
         return "redirect:/login?success";
     }
     @GetMapping("/funcional/archivo")
@@ -73,7 +70,7 @@ public class ErrorTestController {
         model.addAttribute("equipoPokemon", equipo);
         model.addAttribute("nombreArchivo", nombreArchivo);
 
-        return "pruebas_api"; // (o como se llame tu archivo HTML)
+        return "pruebas_api";
     }
     @GetMapping("/funcional/basedatos")
     public String probarBD(@RequestParam String nombreTabla, Model model) throws Exception {
@@ -84,7 +81,6 @@ public class ErrorTestController {
         return "pruebas_api";
     }
 
-    // NUEVO: Procesar el formulario de añadir entrenador
     @PostMapping("/funcional/basedatos/añadir")
     public String añadirEntrenador(@RequestParam String nombre, @RequestParam int medallas, Model model) {
         apiService.añadirEntrenador(nombre, medallas);
@@ -112,10 +108,8 @@ public class ErrorTestController {
             model.addAttribute("error", "No existe ningún entrenador con ese nombre en la base de datos.");
             return "forgot_password";
         }
-        // Si existe, le pasamos su pregunta a la siguiente pantalla
         model.addAttribute("username", user.getUsername());
 
-        // Formateamos la pregunta para que se vea bonita
         String preguntaBonita = switch (user.getSecurityQuestion()) {
             case "pokemon_inicial" -> "¿Cuál fue tu primer Pokémon?";
             case "ciudad_natal" -> "¿En qué ciudad naciste?";
@@ -135,7 +129,6 @@ public class ErrorTestController {
                                    @RequestParam String confirmNewPassword,
                                    Model model) {
 
-        // Verificamos si las contraseñas coinciden
         if (!newPassword.equals(confirmNewPassword)) {
             model.addAttribute("error", "Las contraseñas nuevas no coinciden.");
             model.addAttribute("username", username);
@@ -143,11 +136,10 @@ public class ErrorTestController {
             return "reset_password";
         }
 
-        // Verificamos la respuesta secreta
         boolean exito = userService.resetearPassword(username, respuesta, newPassword);
 
         if (exito) {
-            return "redirect:/login?resetSuccess"; // Al login con mensaje de éxito
+            return "redirect:/login?resetSuccess";
         } else {
             model.addAttribute("error", "La respuesta secreta es INCORRECTA.");
             model.addAttribute("username", username);
@@ -163,7 +155,6 @@ public class ErrorTestController {
             model.addAttribute("exitoGeneral", "La API respondió correctamente: " + resultado);
 
         } catch (HttpClientErrorException e) {
-            // EXCEPCIONES NO CRÍTICAS (400, 401, 404) -> Se traducen y se muestran en la misma pantalla
             String mensajeTraducido = switch (e.getStatusCode().value()) {
                 case 400 -> "Atención (400): La petición está mal formulada. Por favor, revisa los datos.";
                 case 401 -> "Acceso Denegado (401): No tienes permisos suficientes para ver esta información.";
@@ -172,8 +163,7 @@ public class ErrorTestController {
             };
             model.addAttribute("error_no_critico", mensajeTraducido);
         }
-        // Nota: Los errores 5xx (HttpServerErrorException) no los capturamos aquí.
-        // Dejamos que suban al GlobalExceptionHandler para mostrar la pantalla crítica de caída de sistema.
+
 
         return "pruebas_api";
     }

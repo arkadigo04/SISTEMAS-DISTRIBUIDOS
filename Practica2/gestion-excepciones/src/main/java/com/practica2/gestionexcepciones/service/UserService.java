@@ -15,13 +15,12 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Actualizamos el método para recibir los nuevos parámetros
     public void registrarUsuario(String username, String password, String securityQuestion, String securityAnswer) {
         User user = new User();
         user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password)); // Contraseña encriptada
-        user.setSecurityQuestion(securityQuestion);         // Guardamos la pregunta
-        user.setSecurityAnswer(securityAnswer);             // Guardamos la respuesta secreta
+        user.setPassword(passwordEncoder.encode(password));
+        user.setSecurityQuestion(securityQuestion);
+        user.setSecurityAnswer(securityAnswer);
 
         userRepository.save(user);
     }
@@ -31,15 +30,13 @@ public class UserService {
     }
 
     public boolean resetearPassword(String username, String respuesta, String nuevaPassword) {
-        // Usamos el método de arriba
         User user = buscarPorUsuario(username);
 
-        // Si el usuario existe, tiene respuesta guardada, y coincide
         if (user != null && user.getSecurityAnswer() != null && user.getSecurityAnswer().equalsIgnoreCase(respuesta)) {
             user.setPassword(passwordEncoder.encode(nuevaPassword));
-            userRepository.save(user); // Guardamos la nueva clave
+            userRepository.save(user);
             return true;
         }
-        return false; // Si falla, devolvemos falso
+        return false;
     }
 }

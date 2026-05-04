@@ -22,14 +22,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // ¡AQUÍ ESTÁ LA MAGIA! Aseguramos que estas 4 rutas exactas sean públicas
                         .requestMatchers("/login").permitAll()
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/forgot-password").permitAll()
                         .requestMatchers("/reset-password").permitAll()
                         .requestMatchers("/css/**").permitAll()
 
-                        // Cualquier otra ruta requiere login
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
