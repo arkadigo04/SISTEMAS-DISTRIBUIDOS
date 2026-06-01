@@ -1,0 +1,43 @@
+services:
+  db-usuarios:
+    image: postgres:15
+    container_name: db-usuarios
+    environment:
+      POSTGRES_DB: pokemon_db
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./datos_db:/var/lib/postgresql/data
+    networks:
+      - red_pokemon
+
+  python-api:
+    build: ./api_python
+    container_name: python-api
+    # AÑADIMOS LA DIRECTIVA PORTS AQUÍ PARA QUE POSTMAN PUEDA ENTRAR:
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db-usuarios
+    networks:
+      - red_pokemon
+
+  java-app:
+    build: ./gestion-excepciones
+    container_name: java-app
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHON_URL=http://python-api:5000/api
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-usuarios:5432/pokemon_db
+    depends_on:
+      - db-usuarios
+      - python-api
+    networks:
+      - red_pokemon
+
+networks:
+  red_pokemon:
+    driver: bridge

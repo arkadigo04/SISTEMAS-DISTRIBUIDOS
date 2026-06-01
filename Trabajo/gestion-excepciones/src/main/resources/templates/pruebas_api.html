@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Centro de Datos Pokedex</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/International_Pokémon_logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body>
+
+<div class="navbar">
+    <img th:src="@{/img/International_Pokémon_logo.svg}" alt="Pokémon Logo" class="banner-logo">
+    <h1>Terminal de Gestión Distribuida</h1>
+    <a href="/">Cerrar Sesión</a>
+</div>
+
+<div class="container">
+
+    <audio id="bg-audio" loop>
+        <source th:src="@{/audio/musica.mp3}" type="audio/mpeg">
+    </audio>
+
+    <button id="mute-btn" onclick="gestionarAudio(event)">PLAY</button>
+
+    <div th:if="${error_traducido}" class="alert alert-danger">
+        <span th:text="${error_traducido}"></span>
+    </div>
+    <div th:if="${error_no_critico}" class="alert alert-warning">
+        <span th:text="${error_no_critico}"></span>
+    </div>
+    <div th:if="${exitoGeneral}" class="alert alert-success">
+        <span th:text="${exitoGeneral}"></span>
+    </div>
+
+    <div th:if="${datosBD}" class="card">
+        <div class="card-header">Ficheros de la Liga: <span th:text="${nombreTabla}"></span></div>
+        <table class="poke-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Entrenador</th>
+                <th>Medallas</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="fila : ${datosBD}">
+                <td th:text="${fila.id}"></td>
+                <td class="fw-bold" th:text="${fila.nombre}"></td>
+                <td th:text="${fila.medallas} + ' insignias'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${equipoPokemon}" class="card">
+        <div class="card-header">Ficha de Equipo: <span th:text="${nombreArchivo}"></span></div>
+        <div class="grid-equipo">
+            <div th:each="poke : ${equipoPokemon}" class="poke-card-circular">
+                <img th:if="${poke.imagen != null}" th:src="${poke.imagen}" class="poke-circle" alt="Img">
+                <div th:if="${poke.imagen == null}" class="poke-circle poke-circle-empty">N/A</div>
+                <div class="poke-name" th:text="${poke.nombre}"></div>
+                <div class="poke-stats-mini">
+                    Exp: <span th:text="${poke.experiencia}"></span><br>
+                    Alt: <span th:text="${poke.altura}"></span>m
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${datosPokemon}" class="card">
+        <div class="card-header" th:text="${datosPokemon.nombre}"></div>
+        <img class="poke-circle-large" th:src="${datosPokemon.imagen}" alt="Poke">
+        <div class="poke-stats-mini">
+            <strong>Experiencia:</strong> <span th:text="${datosPokemon.experiencia}"></span> |
+            <strong>Altura:</strong> <span th:text="${datosPokemon.altura}"></span>m |
+            <strong>Peso:</strong> <span th:text="${datosPokemon.peso}"></span>kg
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Consultas de Red</div>
+        <form action="/funcional/pokemon" method="get">
+            <input class="input-text" type="text" name="nombrePokemon" placeholder="Nombre para búsqueda API">
+            <button class="btn-primary" type="submit">Sincronizar API</button>
+        </form>
+
+        <form action="/funcional/basedatos" method="get" style="margin-top: 15px;">
+            <input class="input-text" type="text" name="nombreTabla" placeholder="Tabla (entrenadores)">
+            <button class="btn-primary btn-secondary" type="submit">Consultar PostgreSQL</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Sistema de Archivos y Tests</div>
+        <form action="/funcional/archivo" method="get">
+            <input class="input-text" type="text" name="nombreArchivo" placeholder="Archivo (ej: equipo)">
+            <button class="btn-primary" type="submit">Cargar Informe TXT</button>
+        </form>
+
+        <form action="/funcional/simular-error" method="get" style="margin-top: 15px;">
+            <select class="input-text" name="codigo">
+                <option value="200">Estado: OK (200)</option>
+                <option value="400">Estado: BAD REQUEST (400)</option>
+                <option value="401">Estado: UNAUTHORIZED (401)</option>
+                <option value="404">Estado: NOT FOUND (404)</option>
+                <option value="500">Estado: CRITICAL ERROR (500)</option>
+            </select>
+            <button class="btn-primary btn-tertiary" type="submit">Simular Excepción</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    const audio = document.getElementById('bg-audio');
+    const btn = document.getElementById('mute-btn');
+    let reproduciendo = false;
+
+    function gestionarAudio(event) {
+        event.stopPropagation();
+
+        if (!reproduciendo) {
+            audio.play().then(() => {
+                reproduciendo = true;
+                btn.innerText = "MUTE";
+                audio.muted = false;
+            }).catch(e => console.log("Bloqueo del navegador: " + e));
+        } else {
+            if (audio.muted) {
+                audio.muted = false;
+                btn.innerText = "MUTE";
+            } else {
+                audio.muted = true;
+                btn.innerText = "ON";
+            }
+        }
+    }
+
+    document.body.addEventListener('click', function() {
+        if (!reproduciendo) {
+            audio.play().then(() => {
+                reproduciendo = true;
+                btn.innerText = "MUTE";
+            }).catch(e => console.log("Esperando interacción..."));
+        }
+    }, { once: true });
+</script>
+</body>
+</html>

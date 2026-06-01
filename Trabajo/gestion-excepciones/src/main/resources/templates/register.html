@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Entrenador</title>
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+<body>
+<div class="box">
+    <h2>Nuevo Registro</h2>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <form th:action="@{/register}" method="post">
+        <label>Nombre de Usuario</label>
+        <input type="text" name="username" required>
+        <label>Contraseña</label>
+        <input type="password" name="password" required>
+        <label>Confirmar Contraseña</label>
+        <input type="password" name="confirmPassword" required>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <label>Pregunta de Seguridad</label>
+        <select name="securityQuestion" required>
+            <option value="pokemon_inicial">¿Cuál fue tu primer Pokémon?</option>
+            <option value="ciudad_natal">¿En qué ciudad naciste?</option>
+        </select>
+        <input type="text" name="securityAnswer" placeholder="Tu respuesta" required>
+        <button type="submit">Enviar Registro</button>
+    </form>
+    <a href="/login">Ya tengo una cuenta</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+$kind: http-request
+name: http://localhost:5000/api/archivo/equipo
+url: http://localhost:5000/api/archivo/equipo
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("El archivo equipo.txt se procesó con éxito (Status 200)", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("La respuesta debe tener formato JSON", function () {
+          pm.response.to.be.json;
+      });
+
+      pm.test("El sistema debe devolver una lista de Pokémon", function () {
+          var equipo = pm.response.json();
+          
+          pm.expect(Array.isArray(equipo)).to.be.true;
+          
+          pm.expect(equipo.length).to.be.above(0);
+      });
+    language: text/javascript
+order: 4499158876933741

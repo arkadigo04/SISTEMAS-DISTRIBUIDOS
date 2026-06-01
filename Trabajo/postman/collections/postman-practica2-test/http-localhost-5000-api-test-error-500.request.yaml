@@ -1,0 +1,12 @@
+$kind: http-request
+name: http://localhost:5000/api/test-error/500
+url: http://localhost:5000/api/test-error/500
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("El servidor debe devolver un error 500 (Internal Server Error)", function () {
+          pm.response.to.have.status(500);
+      });
+    language: text/javascript
+order: 4454962360847534
