@@ -39,4 +39,12 @@ public class UserService {
         }
         return false;
     }
+
+    public java.util.List<User> obtenerTodos() {
+        return userRepository.findAll();
+    }
+
+    public void eliminarUsuario(Long id) {
+        userRepository.deleteById(id);
+    }
 }

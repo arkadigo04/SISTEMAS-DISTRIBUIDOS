@@ -39,13 +39,24 @@ def init_db():
                 medallas INTEGER NOT NULL
             )
         ''')
+        cur.execute('''
+                    CREATE TABLE IF NOT EXISTS gimnasios (
+                        id SERIAL PRIMARY KEY,
+                        nombre VARCHAR(100) NOT NULL,
+                        ciudad VARCHAR(100) NOT NULL
+                    )
+                ''')
         cur.execute("SELECT COUNT(*) FROM entrenadores")
         if cur.fetchone()[0] == 0:
             cur.execute("INSERT INTO entrenadores (nombre, medallas) VALUES (%s, %s)", ('Ash Ketchum', 8))
             cur.execute("INSERT INTO entrenadores (nombre, medallas) VALUES (%s, %s)", ('Misty', 2))
+        cur.execute("SELECT COUNT(*) FROM gimnasios")
+        if cur.fetchone()[0] == 0:
+            cur.execute("INSERT INTO gimnasios (nombre, ciudad) VALUES (%s, %s)", ('Gimnasio Roca', 'Ciudad Plateada'))
         conn.commit()
         cur.close()
         conn.close()
+
 
 init_db()
 
@@ -90,18 +101,55 @@ def crear_entrenador():
 
 @app.route('/api/basedatos/<tabla>', methods=['GET'])
 def leer_basedatos(tabla):
-    if tabla != "entrenadores":
+    if tabla not in ["entrenadores", "gimnasios"]:
         return jsonify({"error_tipo": "DB_ERROR", "mensaje": "Tabla no autorizada"}), 500
+
     conn = get_db_connection()
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM entrenadores")
+        cur.execute(f"SELECT * FROM {tabla}")
         filas = cur.fetchall()
         cur.close()
         conn.close()
         return jsonify({"datos": filas}), 200
     except Exception as e:
         return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(e)}), 500
+
+@app.route('/api/basedatos/entrenadores/<int:id>', methods=['PUT'])
+def actualizar_entrenador(id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": "Fallo de conexión"}), 500
+    cursor = conn.cursor()
+    try:
+        data = request.json
+        query = "UPDATE entrenadores SET nombre = %s, medallas = %s WHERE id = %s"
+        cursor.execute(query, (data['nombre'], data['medallas'], id))
+        conn.commit()
+        return jsonify({"mensaje": "Registro actualizado"}), 200
+    except Exception as error:
+        conn.rollback()
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(error)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/basedatos/entrenadores/<int:id>', methods=['DELETE'])
+def borrar_entrenador(id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": "Fallo de conexión"}), 500
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM entrenadores WHERE id = %s", (id,))
+        conn.commit()
+        return jsonify({"mensaje": "Registro eliminado"}), 200
+    except Exception as error:
+        conn.rollback()
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(error)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # --- 3. LECTURA DE ARCHIVOS (RUTA ABSOLUTA ARREGLADA) ---
 @app.route('/api/archivo/<nombre_archivo>', methods=['GET'])
@@ -142,6 +190,53 @@ def procesar_archivo(nombre_archivo):
         return jsonify(equipo), 200
     except Exception as e:
         return jsonify({"error_tipo": "INTERNAL_SERVER_ERROR", "mensaje": str(e)}), 500
+
+@app.route('/api/basedatos/gimnasios', methods=['POST'])
+def crear_gimnasio():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        data = request.json
+        cursor.execute("INSERT INTO gimnasios (nombre, ciudad) VALUES (%s, %s)", (data['nombre'], data['ciudad']))
+        conn.commit()
+        return jsonify({"mensaje": "Gimnasio registrado"}), 201
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/basedatos/gimnasios/<int:id>', methods=['PUT'])
+def actualizar_gimnasio(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        data = request.json
+        cursor.execute("UPDATE gimnasios SET nombre = %s, ciudad = %s WHERE id = %s", (data['nombre'], data['ciudad'], id))
+        conn.commit()
+        return jsonify({"mensaje": "Gimnasio actualizado"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/basedatos/gimnasios/<int:id>', methods=['DELETE'])
+def borrar_gimnasio(id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM gimnasios WHERE id = %s", (id,))
+        conn.commit()
+        return jsonify({"mensaje": "Gimnasio eliminado"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error_tipo": "DB_ERROR", "mensaje": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # --- 4. SIMULADOR DE EXCEPCIONES (EL QUE TE FALTABA) ---
 @app.route('/api/test-error/<codigo>', methods=['GET'])

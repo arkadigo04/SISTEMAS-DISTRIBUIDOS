@@ -42,4 +42,48 @@ public class ApiService {
                 .retrieve()
                 .body(String.class);
     }
+
+    public void actualizarEntrenador(Long id, String nombre, int medallas) {
+        String jsonBody = String.format("{\"nombre\": \"%s\", \"medallas\": %d}", nombre, medallas);
+        restClient.put()
+                .uri(BASE_URL + "/basedatos/entrenadores/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jsonBody)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public void eliminarEntrenador(Long id) {
+        restClient.delete()
+                .uri(BASE_URL + "/basedatos/entrenadores/" + id)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public String añadirGimnasio(String nombre, String ciudad) {
+        String jsonBody = String.format("{\"nombre\": \"%s\", \"ciudad\": \"%s\"}", nombre, ciudad);
+        return restClient.post()
+                .uri(BASE_URL + "/basedatos/gimnasios")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jsonBody)
+                .retrieve()
+                .body(String.class);
+    }
+
+    public void actualizarGimnasio(Long id, String nombre, String ciudad) {
+        String jsonBody = String.format("{\"nombre\": \"%s\", \"ciudad\": \"%s\"}", nombre, ciudad);
+        restClient.put()
+                .uri(BASE_URL + "/basedatos/gimnasios/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jsonBody)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    public void eliminarGimnasio(Long id) {
+        restClient.delete()
+                .uri(BASE_URL + "/basedatos/gimnasios/" + id)
+                .retrieve()
+                .toBodilessEntity();
+    }
 }
