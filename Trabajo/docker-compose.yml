@@ -32,6 +32,7 @@ services:
     environment:
       - PYTHON_URL=http://python-api:5000/api
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-usuarios:5432/pokemon_db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - db-usuarios
       - python-api
