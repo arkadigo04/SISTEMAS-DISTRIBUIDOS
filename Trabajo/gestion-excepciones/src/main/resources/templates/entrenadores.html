@@ -15,7 +15,7 @@
     <div class="row mb-4 align-items-center">
         <div class="col">
             <h2 class="fw-bold" style="color: #2c3e50;">Registro de Entrenadores (PostgreSQL)</h2>
-            <p class="text-muted">Servicio conectado dinámicamente mediante la API de Python.</p>
+            <p class="text-muted">Servicio conectado dinámicamente mediante la API de Python con notificaciones SMTP.</p>
         </div>
         <div class="col-auto">
             <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#entrenadorModal" onclick="limpiarFormulario()">
@@ -25,7 +25,7 @@
     </div>
 
     <div th:if="${param.exito}" class="alert alert-success alert-dismissible fade show shadow-sm">
-        <i class="bi bi-check-circle-fill"></i> Operación guardada correctamente en la base de datos.
+        <i class="bi bi-check-circle-fill"></i> Operación guardada correctamente en la base de datos y notificación enviada.
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
@@ -93,6 +93,16 @@
                         <label class="form-label fw-bold">Cantidad de Medallas</label>
                         <input type="number" class="form-control" id="entrenadorMedallas" name="medallas" min="0" max="8" required>
                     </div>
+
+                    <div class="mb-3" id="campoEmailDiv">
+                        <label class="form-label fw-bold">Correo Electrónico (Notificación)</label>
+                        <input type="email" class="form-control" id="entrenadorCorreo" name="correo" placeholder="ejemplo@correo.com">
+
+                        <div class="alert alert-info mt-2 py-2 mb-0" style="font-size: 0.85em;">
+                            <i class="bi bi-envelope-at-fill"></i> Se enviará automáticamente un correo de bienvenida a esta dirección confirmando el alta en la Liga.
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -110,6 +120,11 @@
         document.getElementById('entrenadorId').value = '';
         document.getElementById('entrenadorNombre').value = '';
         document.getElementById('entrenadorMedallas').value = '0';
+
+        // Mostramos el campo de correo y lo hacemos obligatorio al crear uno nuevo
+        document.getElementById('campoEmailDiv').style.display = 'block';
+        document.getElementById('entrenadorCorreo').value = '';
+        document.getElementById('entrenadorCorreo').required = true;
     }
 
     function cargarFormulario(id, nombre, medallas) {
@@ -117,6 +132,10 @@
         document.getElementById('entrenadorId').value = id;
         document.getElementById('entrenadorNombre').value = nombre;
         document.getElementById('entrenadorMedallas').value = medallas;
+
+        // Ocultamos el campo de correo al editar, porque solo avisamos en el alta nueva
+        document.getElementById('campoEmailDiv').style.display = 'none';
+        document.getElementById('entrenadorCorreo').required = false;
     }
 </script>
 

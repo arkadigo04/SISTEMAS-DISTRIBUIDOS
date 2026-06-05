@@ -33,24 +33,22 @@ public class EntrenadorController {
     @PostMapping("/guardar")
     public String guardarEntrenador(@RequestParam(required = false) Long id,
                                     @RequestParam String nombre,
-                                    @RequestParam int medallas) {
+                                    @RequestParam int medallas,
+                                    @RequestParam(required = false) String correo) { // NUEVO PARÁMETRO
         if (id == null) {
-            // 1. Guardamos el entrenador a través de la API de Python
-            apiService.añadirEntrenador(nombre, medallas); // Create
+            apiService.añadirEntrenador(nombre, medallas);
 
-            // 2. Disparamos la notificación por correo en un hilo independiente
+            // Pasamos el correo destino a nuestro servicio
             new Thread(() -> {
                 try {
-                    emailService.enviarAlertaNuevoEntrenador(nombre, medallas);
-                    System.out.println("✅ Notificación de alta enviada por email a los administradores.");
+                    emailService.enviarAlertaNuevoEntrenador(nombre, medallas, correo);
                 } catch (Exception e) {
-                    System.err.println("❌ Error al enviar el email de notificación: " + e.getMessage());
+                    System.err.println("❌ Error al enviar el email: " + e.getMessage());
                 }
             }).start();
 
         } else {
-            // Si el ID no es nulo, es una simple edición (no enviamos correo)
-            apiService.actualizarEntrenador(id, nombre, medallas); // Update
+            apiService.actualizarEntrenador(id, nombre, medallas);
         }
         return "redirect:/entrenadores?exito=true";
     }

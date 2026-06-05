@@ -15,21 +15,26 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String remitente;
 
-    public void enviarAlertaNuevoEntrenador(String nombreEntrenador, int medallas) {
-        SimpleMailMessage mensaje = new SimpleMailMessage();
+    // AÑADIDO: Recibimos el correoDestino del formulario
+    public void enviarAlertaNuevoEntrenador(String nombreEntrenador, int medallas, String correoDestino) {
 
-        // IMPORTANTE: Outlook exige que el remitente sea exactamente el mismo email que se loguea
+        if(correoDestino == null || correoDestino.isEmpty()) {
+            return; // Si por lo que sea no hay correo, abortamos
+        }
+
+        SimpleMailMessage mensaje = new SimpleMailMessage();
         mensaje.setFrom(remitente);
 
-        // Nos enviamos el correo a nosotros mismos como administradores del sistema
-        mensaje.setTo(remitente);
+        // AHORA SÍ: Se lo enviamos al entrenador nuevo
+        mensaje.setTo(correoDestino);
 
-        mensaje.setSubject("ALERTA LIGA POKÉMON: Nuevo Entrenador Registrado");
-        mensaje.setText("Notificación del Sistema Distribuido:\n\n" +
-                "Se ha registrado exitosamente a un nuevo entrenador en la base de datos de PostgreSQL.\n\n" +
-                "Nombre: " + nombreEntrenador + "\n" +
-                "Medallas Actuales: " + medallas + "\n\n" +
-                "Revisa la terminal de gestión para más detalles.");
+        mensaje.setSubject("¡Bienvenido a la Liga Pokémon Oficial!");
+        mensaje.setText("Hola " + nombreEntrenador + ",\n\n" +
+                "Tu registro en la Liga Pokémon ha sido completado con éxito a través de nuestro Sistema Distribuido.\n\n" +
+                "Datos de tu ficha:\n" +
+                "- Nombre: " + nombreEntrenador + "\n" +
+                "- Medallas Registradas: " + medallas + "\n\n" +
+                "¡Mucho éxito en tu aventura para convertirte en Maestro Pokémon!");
 
         mailSender.send(mensaje);
     }
