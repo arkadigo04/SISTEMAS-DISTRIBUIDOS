@@ -33,6 +33,12 @@ services:
       - PYTHON_URL=http://python-api:5000/api
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-usuarios:5432/pokemon_db
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=${GMAIL_USER}
+      - SPRING_MAIL_PASSWORD=${GMAIL_PASS}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
     depends_on:
       - db-usuarios
       - python-api
