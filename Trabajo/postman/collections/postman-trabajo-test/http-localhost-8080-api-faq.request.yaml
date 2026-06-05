@@ -1,0 +1,9 @@
+$kind: http-request
+name: http://localhost:8080/api/faq
+url: http://localhost:8080/api/faq
+method: GET
+body:
+  type: urlencoded
+  content:
+    pregunta: hola
+order: 4502383386580770

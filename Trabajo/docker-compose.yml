@@ -39,9 +39,32 @@ services:
       - SPRING_MAIL_PASSWORD=${GMAIL_PASS}
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
     depends_on:
       - db-usuarios
       - python-api
+      - rabbitmq
+    networks:
+      - red_pokemon
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-server
+    ports:
+      - "5672:5672"   # Puerto de conexión interna
+      - "15672:15672" # Puerto del panel de control web (¡Para verlo en la presentación!)
+    restart: always
+    networks:
+      - red_pokemon
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube-server
+    ports:
+      - "9000:9000"
     networks:
       - red_pokemon
 

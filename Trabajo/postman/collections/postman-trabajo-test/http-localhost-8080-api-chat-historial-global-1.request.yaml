@@ -1,0 +1,5 @@
+$kind: http-request
+name: http://localhost:8080/api/chat/historial/global
+url: http://localhost:8080/api/chat/historial/global
+method: GET
+order: 4501729682016150
