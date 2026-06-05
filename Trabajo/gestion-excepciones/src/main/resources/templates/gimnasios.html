@@ -7,17 +7,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/International_Pokémon_logo.svg}">
 </head>
-<body class="bg-light">
+<body class="bg-light" style="padding-top: 70px;">
 
-<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #27ae60;">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="/"><i class="bi bi-building"></i> Liga Regional Pokémon</a>
-        <div class="d-flex">
-            <a href="/entrenadores" class="btn btn-warning me-2 fw-bold text-dark">Entrenadores</a>
-            <a href="/" class="btn btn-outline-light"><i class="bi bi-house-door-fill"></i> Inicio</a>
-        </div>
-    </div>
-</nav>
+<div th:replace="~{fragmentos :: navbar}"></div>
 
 <div class="container mt-5">
     <div class="row mb-4 align-items-center">
@@ -126,5 +118,8 @@
         document.getElementById('gimnasioCiudad').value = ciudad;
     }
 </script>
+
+<div th:replace="~{fragmentos :: widgets}"></div>
+
 </body>
 </html>

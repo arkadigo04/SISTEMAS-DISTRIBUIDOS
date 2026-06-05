@@ -4,6 +4,9 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+import hashlib
+import json
+from time import time
 
 app = Flask(__name__)
 
@@ -59,6 +62,81 @@ def init_db():
 
 
 init_db()
+
+# --- SISTEMA BLOCKCHAIN (Registro Inmutable de Transferencias) ---
+class Blockchain:
+    def __init__(self):
+        self.chain = []
+        # Crear el bloque Génesis (el primer bloque de la cadena)
+        self.crear_bloque(proof=100, previous_hash='1', transaccion="Bloque Genesis - Inicio de la Red")
+
+    def crear_bloque(self, proof, previous_hash, transaccion):
+        bloque = {
+            'index': len(self.chain) + 1,
+            'timestamp': time(),
+            'transaccion': transaccion,
+            'proof': proof,
+            'previous_hash': previous_hash
+        }
+        self.chain.append(bloque)
+        return bloque
+
+    def obtener_bloque_anterior(self):
+        return self.chain[-1]
+
+    def prueba_de_trabajo(self, previous_proof):
+        # Un sistema de Proof of Work hiper simplificado
+        new_proof = 1
+        check_proof = False
+        while check_proof is False:
+            hash_operation = hashlib.sha256(str(new_proof**2 - previous_proof**2).encode()).hexdigest()
+            if hash_operation[:4] == '0000':
+                check_proof = True
+            else:
+                new_proof += 1
+        return new_proof
+
+    def hash(self, bloque):
+        encoded_block = json.dumps(bloque, sort_keys=True).encode()
+        return hashlib.sha256(encoded_block).hexdigest()
+
+# Instanciamos la Blockchain a nivel global
+liga_blockchain = Blockchain()
+
+# Endpoint 1: Ver toda la cadena de bloques
+@app.route('/api/blockchain/cadena', methods=['GET'])
+def obtener_cadena():
+    response = {
+        'cadena': liga_blockchain.chain,
+        'longitud': len(liga_blockchain.chain)
+    }
+    return jsonify(response), 200
+
+# Endpoint 2: Minar un nuevo bloque (Registrar una transacción/intercambio)
+@app.route('/api/blockchain/minar', methods=['POST'])
+def minar_bloque():
+    data = request.json
+    if not data or 'transaccion' not in data:
+        return jsonify({'error_tipo': 'BAD_REQUEST', 'mensaje': 'Falta el dato de transaccion'}), 400
+
+    bloque_anterior = liga_blockchain.obtener_bloque_anterior()
+    proof_anterior = bloque_anterior['proof']
+
+    # 1. Ejecutar el algoritmo de minado (Proof of Work)
+    proof = liga_blockchain.prueba_de_trabajo(proof_anterior)
+
+    # 2. Generar el hash del bloque anterior para enlazarlo
+    hash_anterior = liga_blockchain.hash(bloque_anterior)
+
+    # 3. Crear el nuevo bloque
+    bloque = liga_blockchain.crear_bloque(proof, hash_anterior, data['transaccion'])
+
+    return jsonify({
+        'mensaje': '¡Bloque minado y añadido a la red Blockchain!',
+        'index': bloque['index'],
+        'transaccion': bloque['transaccion'],
+        'hash_anterior': bloque['previous_hash']
+    }), 201
 
 # --- 1. BUSCADOR POKEAPI ---
 @app.route('/api/pokemon/<nombre>', methods=['GET'])

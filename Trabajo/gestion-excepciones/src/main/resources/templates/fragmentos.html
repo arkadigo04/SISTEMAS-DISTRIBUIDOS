@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top" style="background-color: #E3350D; z-index: 1040;">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" href="/"><i class="bi bi-broadcast-pin"></i> Red Global Pokémon</a>
+        <div class="d-flex align-items-center">
+                <span class="text-white me-4 d-none d-md-inline">
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" style="width: 20px; margin-right: 5px;">
+                    <strong th:text="${#authentication.name}"></strong>
+                </span>
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-light btn-sm"><i class="bi bi-power"></i> Salir</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div th:fragment="widgets">
+    <div th:replace="~{fragmentos :: core_widgets}"></div>
+    <div th:replace="~{fragmentos :: chat_lateral}"></div>
+</div>
+
+<div th:fragment="core_widgets">
+
+    <audio id="global-audio" loop>
+        <source th:src="@{/audio/musica.mp3}" type="audio/mpeg">
+    </audio>
+    <button id="global-mute-btn" onclick="toggleMute()" class="btn btn-success shadow-lg d-flex justify-content-center align-items-center"
+            style="position: fixed; top: 80px; left: 20px; z-index: 1050; width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; transition: 0.3s;">
+        <i class="bi bi-volume-up-fill fs-4"></i>
+    </button>
+
+    <div style="position: fixed; bottom: 20px; left: 20px; z-index: 1050; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+        <button id="oak-btn" class="btn rounded-circle shadow-lg d-flex justify-content-center align-items-center"
+                style="width: 65px; height: 65px; background-color: #E3350D; border: 3px solid white; cursor: pointer; transition: transform 0.2s;">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="Pokeball" style="width: 40px;">
+        </button>
+
+        <div id="oak-chat-window" class="card shadow-lg d-none" style="width: 360px; position: absolute; bottom: 85px; left: 0; border: none; border-radius: 15px; overflow: hidden;">
+            <div class="card-header text-white d-flex justify-content-between align-items-center p-3" style="background-color: #2c3e50; border-bottom: 4px solid #E3350D;">
+                <div class="d-flex align-items-center">
+                    <img src="https://play.pokemonshowdown.com/sprites/trainers/oak.png" alt="Oak" style="height: 40px; width: 40px; margin-right: 12px; background-color: white; border-radius: 50%; padding: 2px; object-fit: contain;">
+                    <div>
+                        <div class="fw-bold" style="font-size: 1.1em; line-height: 1;">Profesor Oak</div>
+                        <small class="text-success fw-bold" style="font-size: 0.75em;">● En línea</small>
+                    </div>
+                </div>
+                <button id="oak-close" class="btn text-white fs-5" style="border: none;"><i class="bi bi-x-lg"></i></button>
+            </div>
+
+            <div class="card-body p-3" id="oak-chat-body" style="height: 320px; overflow-y: auto; background-color: #e5ddd5; background-image: url('https://www.transparenttextures.com/patterns/cubes.png');">
+                <div class="mb-3 text-start d-flex">
+                    <img src="https://play.pokemonshowdown.com/sprites/trainers/oak.png" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; align-self: flex-end; background: white;">
+                    <span class="text-dark text-wrap text-start p-2 shadow-sm" style="background-color: white; font-size: 0.95em; border-radius: 15px 15px 15px 0;">
+                            ¡Hola! Soy el Profesor Oak. Puedo ayudarte con esta Terminal de Gestión o responder tus dudas sobre el mundo Pokémon. ¿Qué necesitas?
+                        </span>
+                </div>
+            </div>
+
+            <div class="px-2 pb-2 bg-white pt-2 border-top">
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill oak-suggestion" style="font-size: 0.8em;">¿Cómo añado un Gimnasio?</button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill oak-suggestion" style="font-size: 0.8em;">Háblame de Charizard</button>
+                    <button class="btn btn-sm btn-outline-success rounded-pill oak-suggestion" style="font-size: 0.8em;">¿Para qué sirve esta app?</button>
+                </div>
+            </div>
+
+            <div class="card-footer p-2 bg-white border-0">
+                <div class="input-group">
+                    <input type="text" id="oak-input" class="form-control" placeholder="Pregunta al profesor..." style="border-radius: 20px 0 0 20px; border: 1px solid #ced4da;">
+                    <button id="oak-send" class="btn text-white px-3" style="background-color: #E3350D; border-radius: 0 20px 20px 0;"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- JS AUDIO ---
+        const audio = document.getElementById('global-audio');
+        const muteBtn = document.getElementById('global-mute-btn');
+
+        let isMuted = sessionStorage.getItem('audioMuted') === 'true';
+        audio.muted = isMuted;
+        actualizarBotonMute(isMuted);
+
+        const savedTime = sessionStorage.getItem('audioTime');
+        if (savedTime) audio.currentTime = parseFloat(savedTime);
+
+        const playAttempt = setInterval(() => {
+            audio.play().then(() => clearInterval(playAttempt)).catch(() => {});
+        }, 1000);
+
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            sessionStorage.setItem('audioMuted', audio.muted);
+            actualizarBotonMute(audio.muted);
+            audio.play().catch(()=>{});
+        }
+
+        function actualizarBotonMute(muted) {
+            muteBtn.innerHTML = muted ? '<i class="bi bi-volume-mute-fill fs-4"></i>' : '<i class="bi bi-volume-up-fill fs-4"></i>';
+            muteBtn.classList.toggle('btn-danger', muted);
+            muteBtn.classList.toggle('btn-success', !muted);
+        }
+
+        window.addEventListener('beforeunload', () => sessionStorage.setItem('audioTime', audio.currentTime));
+
+        // --- JS OAK PREMIUM ---
+        const oakBtn = document.getElementById('oak-btn');
+        const oakChatWindow = document.getElementById('oak-chat-window');
+        const oakClose = document.getElementById('oak-close');
+        const oakSend = document.getElementById('oak-send');
+        const oakInput = document.getElementById('oak-input');
+        const oakChatBody = document.getElementById('oak-chat-body');
+        const oakSuggestions = document.querySelectorAll('.oak-suggestion');
+
+        oakBtn.addEventListener('click', (e) => { e.preventDefault(); oakChatWindow.classList.toggle('d-none'); });
+        oakClose.addEventListener('click', (e) => { e.preventDefault(); oakChatWindow.classList.add('d-none'); });
+
+        oakSuggestions.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                oakInput.value = btn.innerText;
+                enviarPreguntaOak();
+            });
+        });
+
+        oakSend.addEventListener('click', (e) => { e.preventDefault(); enviarPreguntaOak(); });
+        oakInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); enviarPreguntaOak(); } });
+
+        async function enviarPreguntaOak() {
+            const pregunta = oakInput.value.trim();
+            if (!pregunta) return;
+
+            oakChatBody.innerHTML += `
+                    <div class="mb-3 text-end">
+                        <span class="text-wrap text-start p-2 shadow-sm d-inline-block" style="background-color: #dcf8c6; color: #303030; font-size: 0.95em; border-radius: 15px 15px 0 15px; max-width: 85%;">
+                            ${pregunta}
+                        </span>
+                    </div>`;
+            oakInput.value = '';
+            oakChatBody.scrollTop = oakChatBody.scrollHeight;
+
+            const escribiendoId = 'escribiendo-' + Date.now();
+            oakChatBody.innerHTML += `
+                    <div id="${escribiendoId}" class="mb-3 text-start d-flex align-items-end">
+                        <img src="https://play.pokemonshowdown.com/sprites/trainers/oak.png" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; background: white;">
+                        <span class="text-muted p-2 shadow-sm" style="background-color: white; font-size: 0.9em; font-style: italic; border-radius: 15px 15px 15px 0;">
+                            Oak está escribiendo...
+                        </span>
+                    </div>`;
+            oakChatBody.scrollTop = oakChatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/api/faq', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pregunta: pregunta })
+                });
+                const data = await response.json();
+
+                document.getElementById(escribiendoId).remove();
+                let respuestaLimpia = data.respuesta.replace(/\*\*/g, '<b>').replace(/\*/g, '');
+
+                oakChatBody.innerHTML += `
+                        <div class="mb-3 text-start d-flex">
+                            <img src="https://play.pokemonshowdown.com/sprites/trainers/oak.png" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 8px; align-self: flex-end; background: white;">
+                            <span class="text-dark text-wrap text-start p-2 shadow-sm d-inline-block" style="background-color: white; font-size: 0.95em; line-height: 1.4; border-radius: 15px 15px 15px 0; max-width: 85%;">
+                                ${respuestaLimpia}
+                            </span>
+                        </div>`;
+                oakChatBody.scrollTop = oakChatBody.scrollHeight;
+            } catch (error) {
+                document.getElementById(escribiendoId).remove();
+                oakChatBody.innerHTML += `
+                        <div class="mb-3 text-center">
+                            <span class="badge bg-danger p-2">Error de conexión con el Laboratorio.</span>
+                        </div>`;
+            }
+        }
+    </script>
+</div>
+
+<div th:fragment="chat_lateral">
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1050;">
+        <button class="btn rounded-circle shadow-lg d-flex justify-content-center align-items-center position-relative"
+                type="button" data-bs-toggle="offcanvas" data-bs-target="#chatSidebar"
+                style="width: 65px; height: 65px; background-color: #27ae60; border: 3px solid white;">
+            <i class="bi bi-chat-dots-fill text-white fs-3"></i>
+            <span id="chat-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.9em;">0</span>
+        </button>
+    </div>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="chatSidebar" style="width: 380px; border-left: 4px solid #27ae60; transition: width 0.3s ease;">
+        <div class="offcanvas-header text-white d-flex justify-content-between" id="chat-header-bg" style="background-color: #2c3e50;">
+            <h5 class="offcanvas-title mb-0" id="chat-title"><i class="bi bi-globe"></i> Canal Global</h5>
+            <div>
+                <a href="/chat" class="btn btn-sm btn-outline-light me-2" title="Pantalla Completa"><i class="bi bi-arrows-fullscreen"></i></a>
+
+                <button type="button" class="btn btn-sm btn-outline-light me-2" onclick="toggleChatSize()" title="Ampliar / Reducir chat">
+                    <i class="bi bi-arrows-angle-expand" id="expand-icon"></i>
+                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs nav-fill bg-light" id="chatTabs" role="tablist">
+            <li class="nav-item"><button class="nav-link active fw-bold" id="mensajes-tab" data-bs-toggle="tab" data-bs-target="#mensajes-pane" type="button"><i class="bi bi-chat-text"></i> Mensajes</button></li>
+            <li class="nav-item"><button class="nav-link fw-bold" id="radar-tab" data-bs-toggle="tab" data-bs-target="#radar-pane" type="button" onclick="cargarUsuariosActivos()"><i class="bi bi-radar"></i> Radar <span id="online-count" class="badge bg-success ms-1">1</span></button></li>
+        </ul>
+
+        <div class="tab-content flex-grow-1 d-flex flex-column" style="overflow: hidden;">
+            <div class="tab-pane fade show active d-flex flex-column h-100" id="mensajes-pane">
+                <div class="bg-light p-1 text-center border-bottom">
+                    <button id="btn-volver-global" class="btn btn-sm btn-outline-dark d-none" onclick="volverGlobal()"><i class="bi bi-arrow-left"></i> Volver</button>
+                    <span id="chat-status" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat spin"></i> Conectando...</span>
+                </div>
+                <div class="card-body flex-grow-1" id="chatArea" style="overflow-y: auto; background-color: #e5ddd5; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); padding: 15px;">
+                    <ul id="messageArea" class="list-unstyled mb-0"></ul>
+                </div>
+                <div class="card-footer bg-white border-top p-2">
+                    <form id="messageForm" class="input-group">
+                        <input type="hidden" id="logged-username" th:value="${#authentication.name}">
+                        <input type="text" id="message" class="form-control" placeholder="Mensaje..." autocomplete="off" required disabled>
+                        <button type="submit" class="btn text-white px-3" style="background-color: #27ae60;" id="sendBtn" disabled><i class="bi bi-send-fill"></i></button>
+                    </form>
+                </div>
+            </div>
+            <div class="tab-pane fade h-100" id="radar-pane" style="overflow-y: auto; background-color: #f8f9fa;">
+                <ul id="onlineUsersList" class="list-group list-group-flush mt-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        function toggleChatSize() {
+            const sidebar = document.getElementById('chatSidebar');
+            const icon = document.getElementById('expand-icon');
+            if (sidebar.style.width === '380px' || sidebar.style.width === '') {
+                sidebar.style.width = '800px';
+                icon.classList.replace('bi-arrows-angle-expand', 'bi-arrows-angle-contract');
+            } else {
+                sidebar.style.width = '380px';
+                icon.classList.replace('bi-arrows-angle-contract', 'bi-arrows-angle-expand');
+            }
+        }
+
+        let stompClient = null;
+        const username = document.getElementById('logged-username').value;
+        let currentTarget = "GLOBAL";
+        let unreadCount = 0;
+
+        const chatSidebarEl = document.getElementById('chatSidebar');
+        const chatBadge = document.getElementById('chat-badge');
+
+        chatSidebarEl.addEventListener('show.bs.offcanvas', () => { unreadCount = 0; chatBadge.classList.add('d-none'); });
+
+        function connect() {
+            const socket = new SockJS('/ws-chat');
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+            stompClient.connect({}, onConnected, () => {
+                document.getElementById('chat-status').className = 'badge bg-danger';
+                document.getElementById('chat-status').innerHTML = 'Desconectado';
+            });
+        }
+
+        function onConnected() {
+            stompClient.subscribe('/topic/public', onMessageReceived);
+            stompClient.subscribe('/user/queue/reply', onMessageReceived);
+            stompClient.send("/app/chat.addUser", {}, JSON.stringify({sender: username, type: 'JOIN'}));
+
+            document.getElementById('chat-status').className = 'badge bg-success';
+            document.getElementById('chat-status').innerHTML = 'En línea';
+            document.getElementById('message').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+
+            cargarHistorialGlobal();
+            cargarUsuariosActivos();
+        }
+
+        function formatearHora(fechaRaw) {
+            let date;
+            if (!fechaRaw) date = new Date();
+            else if (Array.isArray(fechaRaw)) date = new Date(fechaRaw[0], fechaRaw[1]-1, fechaRaw[2], fechaRaw[3], fechaRaw[4]);
+            else date = new Date(fechaRaw);
+            return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+        }
+
+        async function cargarHistorialGlobal() {
+            const res = await fetch('/api/chat/historial/global');
+            const msgs = await res.json();
+            document.getElementById('messageArea').innerHTML = '';
+            msgs.forEach(m => pintarBurbuja(m.remitente, m.contenido, m.tipo, m.fechaHora));
+        }
+
+        async function cargarHistorialPrivado(amigo) {
+            const res = await fetch('/api/chat/historial/privado/' + amigo);
+            const msgs = await res.json();
+            document.getElementById('messageArea').innerHTML = '';
+            msgs.forEach(m => pintarBurbuja(m.remitente, m.contenido, m.tipo, m.fechaHora));
+        }
+
+        async function cargarUsuariosActivos() {
+            const res = await fetch('/api/chat/usuarios-activos');
+            const usuarios = await res.json();
+            const lista = document.getElementById('onlineUsersList');
+            lista.innerHTML = '';
+            document.getElementById('online-count').innerText = usuarios.length;
+
+            usuarios.forEach(user => {
+                const isMe = user === username;
+                lista.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded" style="background-color: ${isMe ? '#eafaf1' : '#fff'};">
+                            <div><i class="bi bi-person-circle ${isMe ? 'text-success' : 'text-primary'}"></i> <strong>${user}</strong> ${isMe ? '<small class="text-muted">(Tú)</small>' : ''}</div>
+                            ${!isMe ? `<button class="btn btn-sm btn-primary" onclick="abrirChatPrivado('${user}')"><i class="bi bi-chat-text"></i></button>` : ''}
+                        </li>`;
+            });
+        }
+
+        function onMessageReceived(payload) {
+            const msg = JSON.parse(payload.body);
+            if (!chatSidebarEl.classList.contains('show') && msg.sender !== username && msg.type !== 'JOIN') {
+                unreadCount++;
+                chatBadge.innerText = unreadCount;
+                chatBadge.classList.remove('d-none');
+            }
+            if (msg.type === 'JOIN') {
+                cargarUsuariosActivos();
+                if (currentTarget === "GLOBAL") pintarBurbuja(msg.sender, "entró a la red.", 'JOIN', null);
+            } else if (msg.type === 'PRIVADO') {
+                if (currentTarget !== msg.sender && msg.sender !== username) {
+                    if(currentTarget === "GLOBAL") pintarBurbuja("SISTEMA", `Tienes un nuevo mensaje privado de ${msg.sender}`, 'JOIN', null);
+                } else {
+                    pintarBurbuja(msg.sender, msg.content, msg.type, null);
+                }
+            } else {
+                if (currentTarget === "GLOBAL") pintarBurbuja(msg.sender, msg.content, msg.type, null);
+            }
+        }
+
+        function pintarBurbuja(remitente, contenido, tipo, fechaHoraRaw) {
+            const horaStr = formatearHora(fechaHoraRaw);
+            const li = document.createElement('li');
+            li.classList.add('mb-3', 'd-flex', 'flex-column');
+
+            if (tipo === 'JOIN') {
+                li.classList.add('align-items-center');
+                li.innerHTML = `<span class="badge bg-secondary text-white rounded-pill px-3 py-1"><small>${horaStr}</small> - ${remitente} ${contenido}</span>`;
+            } else {
+                const isMe = remitente === username;
+                li.classList.add(isMe ? 'align-items-end' : 'align-items-start');
+                let color = isMe ? '#dcf8c6' : '#ffffff';
+                if (tipo === 'PRIVADO' && !isMe) color = '#ffeaa7';
+
+                li.innerHTML = `
+                        <div class="shadow-sm p-2" style="background-color: ${color}; border-radius: 12px; max-width: 85%; min-width: 120px;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="fw-bold" style="font-size: 0.75em; color: #E3350D;">${isMe ? 'Tú' : remitente}</small>
+                            </div>
+                            <span style="color: #2c3e50; font-size: 0.95em;">${contenido}</span>
+                            <div class="text-end mt-1"><small class="text-muted" style="font-size: 0.65em;">${horaStr}</small></div>
+                        </div>`;
+            }
+            document.getElementById('messageArea').appendChild(li);
+            document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+        }
+
+        function abrirChatPrivado(amigo) {
+            currentTarget = amigo;
+            document.getElementById('chat-title').innerHTML = `<i class="bi bi-person-lock"></i> ${amigo}`;
+            document.getElementById('chat-header-bg').style.backgroundColor = "#8e44ad";
+            document.getElementById('btn-volver-global').classList.remove('d-none');
+            document.getElementById('message').placeholder = `Mensaje para ${amigo}...`;
+            new bootstrap.Tab(document.getElementById('mensajes-tab')).show();
+            cargarHistorialPrivado(amigo);
+        }
+
+        function volverGlobal() {
+            currentTarget = "GLOBAL";
+            document.getElementById('chat-title').innerHTML = `<i class="bi bi-globe"></i> Canal Global`;
+            document.getElementById('chat-header-bg').style.backgroundColor = "#2c3e50";
+            document.getElementById('btn-volver-global').classList.add('d-none');
+            document.getElementById('message').placeholder = "Mensaje al global...";
+            cargarHistorialGlobal();
+        }
+
+        document.getElementById('messageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message');
+            if (input.value.trim() && stompClient) {
+                const msg = { sender: username, recipient: currentTarget === "GLOBAL" ? null : currentTarget, content: input.value.trim(), type: currentTarget === "GLOBAL" ? 'CHAT' : 'PRIVADO' };
+                stompClient.send(currentTarget === "GLOBAL" ? "/app/chat.sendMessage" : "/app/chat.sendPrivate", {}, JSON.stringify(msg));
+                input.value = '';
+            }
+        });
+
+        connect();
+    </script>
+</div>
+</body>
+</html>

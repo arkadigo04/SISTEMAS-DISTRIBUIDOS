@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Rotom-Chat Global (Pantalla Completa)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body class="bg-light" style="padding-top: 70px;">
+
+<div th:replace="~{fragmentos :: navbar}"></div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header text-white fw-bold p-3 d-flex justify-content-between align-items-center" id="chat-header-bg" style="background-color: #2c3e50;">
+                    <span id="chat-title"><i class="bi bi-globe"></i> Canal Global</span>
+                    <div>
+                        <button id="btn-volver-global" class="btn btn-sm btn-outline-light d-none me-2" onclick="volverGlobal()"><i class="bi bi-arrow-left"></i> Volver al Global</button>
+                        <span id="chat-status" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat spin"></i> Conectando...</span>
+                    </div>
+                </div>
+
+                <div class="card-body" id="chatArea" style="height: 60vh; overflow-y: auto; background-color: #e5ddd5; background-image: url('https://www.transparenttextures.com/patterns/cubes.png');">
+                    <ul id="messageArea" class="list-unstyled mb-0"></ul>
+                </div>
+
+                <div class="card-footer bg-white p-3 border-0">
+                    <form id="messageForm" class="input-group">
+                        <input type="hidden" id="logged-username" th:value="${#authentication.name}">
+                        <input type="text" id="message" class="form-control" placeholder="Escribe un mensaje..." autocomplete="off" required disabled>
+                        <button type="submit" class="btn text-white px-4 fw-bold" style="background-color: #E3350D;" id="sendBtn" disabled>
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header text-white fw-bold p-3 d-flex justify-content-between" style="background-color: #27ae60;">
+                    <span><i class="bi bi-radar"></i> Entrenadores</span>
+                    <span class="badge bg-light text-success" id="online-count">0</span>
+                </div>
+                <div class="card-body p-2" style="height: 60vh; overflow-y: auto; background-color: #f8f9fa;">
+                    <ul id="onlineUsersList" class="list-group list-group-flush"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragmentos :: core_widgets}"></div>
+
+<script>
+    let stompClient = null;
+    const username = document.getElementById('logged-username').value;
+    let currentTarget = "GLOBAL";
+
+    function connect() {
+        const socket = new SockJS('/ws-chat');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, onConnected, () => {
+            document.getElementById('chat-status').className = 'badge bg-danger';
+            document.getElementById('chat-status').innerHTML = 'Desconectado';
+        });
+    }
+
+    function onConnected() {
+        stompClient.subscribe('/topic/public', onMessageReceived);
+        stompClient.subscribe('/user/queue/reply', onMessageReceived);
+        stompClient.send("/app/chat.addUser", {}, JSON.stringify({sender: username, type: 'JOIN'}));
+
+        document.getElementById('chat-status').className = 'badge bg-success';
+        document.getElementById('chat-status').innerHTML = 'En línea';
+        document.getElementById('message').disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+
+        cargarHistorialGlobal();
+        cargarUsuariosActivos();
+    }
+
+    function formatearHora(fechaRaw) {
+        let date;
+        if (!fechaRaw) date = new Date();
+        else if (Array.isArray(fechaRaw)) date = new Date(fechaRaw[0], fechaRaw[1]-1, fechaRaw[2], fechaRaw[3], fechaRaw[4]);
+        else date = new Date(fechaRaw);
+        return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    }
+
+    async function cargarHistorialGlobal() {
+        const res = await fetch('/api/chat/historial/global');
+        const msgs = await res.json();
+        document.getElementById('messageArea').innerHTML = '';
+        msgs.forEach(m => pintarBurbuja(m.remitente, m.contenido, m.tipo, m.fechaHora));
+    }
+
+    async function cargarHistorialPrivado(amigo) {
+        const res = await fetch('/api/chat/historial/privado/' + amigo);
+        const msgs = await res.json();
+        document.getElementById('messageArea').innerHTML = '';
+        msgs.forEach(m => pintarBurbuja(m.remitente, m.contenido, m.tipo, m.fechaHora));
+    }
+
+    async function cargarUsuariosActivos() {
+        const res = await fetch('/api/chat/usuarios-activos');
+        const usuarios = await res.json();
+        const lista = document.getElementById('onlineUsersList');
+        lista.innerHTML = '';
+        document.getElementById('online-count').innerText = usuarios.length;
+
+        usuarios.forEach(user => {
+            const isMe = user === username;
+            lista.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded" style="background-color: ${isMe ? '#eafaf1' : '#fff'};">
+                        <div><i class="bi bi-person-circle ${isMe ? 'text-success' : 'text-primary'}"></i> <strong>${user}</strong> ${isMe ? '<small class="text-muted">(Tú)</small>' : ''}</div>
+                        ${!isMe ? `<button class="btn btn-sm btn-primary" onclick="abrirChatPrivado('${user}')"><i class="bi bi-chat-text"></i> Privado</button>` : ''}
+                    </li>`;
+        });
+    }
+
+    function onMessageReceived(payload) {
+        const msg = JSON.parse(payload.body);
+        if (msg.type === 'JOIN') {
+            cargarUsuariosActivos();
+            if (currentTarget === "GLOBAL") pintarBurbuja(msg.sender, "entró a la red.", 'JOIN', null);
+        } else if (msg.type === 'PRIVADO') {
+            if (currentTarget !== msg.sender && msg.sender !== username) {
+                if(currentTarget === "GLOBAL") pintarBurbuja("SISTEMA", `Tienes un nuevo mensaje privado de ${msg.sender}`, 'JOIN', null);
+            } else {
+                pintarBurbuja(msg.sender, msg.content, msg.type, null);
+            }
+        } else {
+            if (currentTarget === "GLOBAL") pintarBurbuja(msg.sender, msg.content, msg.type, null);
+        }
+    }
+
+    function pintarBurbuja(remitente, contenido, tipo, fechaHoraRaw) {
+        const horaStr = formatearHora(fechaHoraRaw);
+        const li = document.createElement('li');
+        li.classList.add('mb-3', 'd-flex', 'flex-column');
+
+        if (tipo === 'JOIN') {
+            li.classList.add('align-items-center');
+            li.innerHTML = `<span class="badge bg-secondary text-white rounded-pill px-3 py-1"><small>${horaStr}</small> - ${remitente} ${contenido}</span>`;
+        } else {
+            const isMe = remitente === username;
+            li.classList.add(isMe ? 'align-items-end' : 'align-items-start');
+            let color = isMe ? '#dcf8c6' : '#ffffff';
+            if (tipo === 'PRIVADO' && !isMe) color = '#ffeaa7';
+
+            li.innerHTML = `
+                    <div class="shadow-sm p-2" style="background-color: ${color}; border-radius: 12px; max-width: 85%; min-width: 120px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-bold" style="font-size: 0.75em; color: #E3350D;">${isMe ? 'Tú' : remitente}</small>
+                        </div>
+                        <span style="color: #2c3e50; font-size: 0.95em;">${contenido}</span>
+                        <div class="text-end mt-1"><small class="text-muted" style="font-size: 0.65em;">${horaStr}</small></div>
+                    </div>`;
+        }
+        document.getElementById('messageArea').appendChild(li);
+        document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    }
+
+    function abrirChatPrivado(amigo) {
+        currentTarget = amigo;
+        document.getElementById('chat-title').innerHTML = `<i class="bi bi-person-lock"></i> Chat Privado: ${amigo}`;
+        document.getElementById('chat-header-bg').style.backgroundColor = "#8e44ad";
+        document.getElementById('btn-volver-global').classList.remove('d-none');
+        document.getElementById('message').placeholder = `Mensaje para ${amigo}...`;
+        cargarHistorialPrivado(amigo);
+    }
+
+    function volverGlobal() {
+        currentTarget = "GLOBAL";
+        document.getElementById('chat-title').innerHTML = `<i class="bi bi-globe"></i> Canal Global`;
+        document.getElementById('chat-header-bg').style.backgroundColor = "#2c3e50";
+        document.getElementById('btn-volver-global').classList.add('d-none');
+        document.getElementById('message').placeholder = "Mensaje al global...";
+        cargarHistorialGlobal();
+    }
+
+    document.getElementById('messageForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('message');
+        if (input.value.trim() && stompClient) {
+            const msg = { sender: username, recipient: currentTarget === "GLOBAL" ? null : currentTarget, content: input.value.trim(), type: currentTarget === "GLOBAL" ? 'CHAT' : 'PRIVADO' };
+            stompClient.send(currentTarget === "GLOBAL" ? "/app/chat.sendMessage" : "/app/chat.sendPrivate", {}, JSON.stringify(msg));
+            input.value = '';
+        }
+    });
+
+    connect();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
